@@ -1,0 +1,21 @@
+certifi==2021.10.8
+click @ file:///C:/ci/click_1646038595831/work
+colorama @ file:///tmp/build/80754af9/colorama_1607707115595/work
+Flask==2.1.1
+importlib-metadata==4.11.3
+itsdangerous @ file:///tmp/build/80754af9/itsdangerous_1621432558163/work
+Jinja2==3.1.1
+MarkupSafe @ file:///C:/ci/markupsafe_1621528502553/work
+numpy==1.22.3
+packaging==21.3
+pandas==1.4.2
+patsy==0.5.2
+pyparsing==3.0.8
+python-dateutil==2.8.2
+pytz==2022.1
+scipy==1.8.0
+six==1.16.0
+statsmodels==0.13.2
+Werkzeug @ file:///opt/conda/conda-bld/werkzeug_1645628268370/work
+wincertstore==0.2
+zipp==3.8.0
