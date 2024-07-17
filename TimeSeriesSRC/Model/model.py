@@ -21,8 +21,8 @@ class Parameters:
     delta : float
 
 class pmodel:
-    def __init__(self, xtype, na=[[0]], nb=[[0]], nc=[[0]], nd=[[0]], nf=[[0]], delay=[[]], diff=[[0]], per=[[1]], upre=[[]], ypre=[[]], ypost=[[]], eFcn='estimlm', indexFcn='pmodmse', initFcn='initrand'):
-        self.na = np.array(na)
+    def __init__(self, xtype, na=[0,1], nb=[0], nc=[0], nd=[0], nf=[0], delay=[1], diff=[0], per=[], upre=[[]], ypre=[[]], ypost=[[]], eFcn='estimlm', indexFcn='pmodmse', initFcn='initrand'):
+        self.na = na
         self.nb = nb
         self.nc = nc
         self.nd = nd
@@ -30,6 +30,7 @@ class pmodel:
         self.delay = delay
         self.diff = diff
         self.per = per
+        self.period = per
         self.upreproc = np.array(upre)
         self.ypreproc = np.array(ypre)
         self.ypostproc = np.array(ypost)
@@ -49,14 +50,12 @@ class pmodel:
                                       delta=1e-7
                                       )
 
-        self.a = list([self.na])
-        self.b = list([self.nb])
-        self.c = list([self.nc])
-        self.d = list([self.nd])
-        self.f = list([self.nf])
-        self.period = list(self.per)
-        self.u = np.array([[]])
-        self.y = np.array([[]])
+        self.b = []
+        self.c = []
+        self.d = []
+        self.f = []
+
+
         self.new_model()
         # equivalent to predict model
         self.init()
@@ -70,7 +69,7 @@ class pmodel:
         s=s+'                       d: {0}\n'.format(self.d)
         s=s+'                       f: {0}\n'.format(self.f)
         s=s+'                    diff: {0}\n'.format(self.diff)
-        s=s+'                  period: {0}\n'.format(self.period)
+        s=s+'                  period: {0}\n'.format(self.per)
         s=s+'                   delay: {0}\n'.format(self.delay)
         s=s+'\n'
         s=s+'         functions:\n'
@@ -111,10 +110,10 @@ class pmodel:
 
     def newregr(self):
         self.a = []
-        self.b[0] = np.zeros(self.nb + 1)
-        self.c = [[]]
-        self.d = [[]]
-        self.f = [[]]
+        self.b = np.zeros(self.nb + 1)
+        self.c = []
+        self.d = []
+        self.f = []
         if len(self.delay) != self.nb:
             xerror= 'delay and nb must have the same # of terms.'
             raise Exception(xerror)
@@ -132,7 +131,6 @@ class pmodel:
                 xerror= 'All nb(i) must be positive integers.'
                 raise Exception(xerror)
 
-
         for i in range(len(self.nc)):
             if self.nc[i] < 0:
                 xerror='All nc(i) must be positive integers.'
@@ -148,19 +146,17 @@ class pmodel:
                 error='All nf(i) must be positive integers.'
                 raise Exception(error)
 
-        self.a = list([[1, 0]])
+        self.a = [[]]
 
         nnb = len(self.nb)
 
         for i in range(nnb):
-            self.b[i] = np.zeros(int(self.nb[i]) + 1)
+            self.b.append(np.zeros(int(self.nb[i]) + 1))
 
-        nnc = len(self.nc[0])
+        nnc = len(self.nc)
 
         for i in range(nnc):
-            self.c[i] = np.zeros(int(self.nc[i]))
-
-        #self.c = self.c.reshape(1,-1)
+            self.c.append(np.zeros(int(self.nc[i])))
 
         nnd = len(self.nd)
         if nnd != nnc:
@@ -168,9 +164,7 @@ class pmodel:
             raise Exception(xerror)
 
         for i in range(nnd):
-            self.d[i] = np.zeros(int(self.nd[i]))
-
-        #self.d = self.d.reshape(1,-1)
+            self.d.append(np.zeros(int(self.nd[i])))
 
         nnf = len(self.nf)
         if nnf != nnb:
@@ -178,9 +172,7 @@ class pmodel:
             raise Exception(xerror)
 
         for i in range(nnf):
-            self.f[i] = np.zeros(int(self.nf[i]))
-
-        #self.f= self.f.reshape(1,-1)
+            self.f.append( np.zeros(int(self.nf[i])))
 
         if len(self.delay) != nnb:
             xerror='delay and nb must have the same # of terms.'
@@ -190,7 +182,7 @@ class pmodel:
             xerror='nc and diff must have the same # of terms.'
             raise Exception(xerror)
 
-        if (len(self.per[0]) + 1) != nnc:
+        if (len(np.array(self.per)) + 1) != nnc:
             xerror= 'per must have one less term than nc.'
             raise Exception(xerror)
 
@@ -210,12 +202,11 @@ class pmodel:
                 xerror='All nb(i) must be positive integers.'
                 raise Exception(xerror)
 
+        self.a = list(np.zeros(self.na))
 
-        self.a[0] = np.zeros(self.na)
         nnb = len(self.nb)
         for i in range(nnb):
             self.b[i] = np.zeros(list(self.nb[i]) + 1)
-
 
         self.c = np.array([[]])
         self.d = np.array([[]])
@@ -313,7 +304,6 @@ class pmodel:
 
     def initzero(self):
 
-
         for i in range(len(self.a)):
             self.a[i] = np.zeros(len(self.a[i]))
 
@@ -334,19 +324,19 @@ class pmodel:
         variance = 0.125;
 
         for i in range(len(self.a)):
-            self.a[i] = variance * (np.random.randn(self.a[i].shape))
+            self.a[i] = variance * (np.random.rand(self.a[i].shape))
 
         for i in range(len(self.b)):
-            self.b[i] = variance * (np.random.randn(self.b[i].shape))
+            self.b[i] = variance * (np.random.rand(self.b[i].shape))
 
         for i in range(len(self.c)):
-            self.c[i] = variance * (np.random.randn(self.c[i].shape))
+            self.c[i] = variance * (np.random.rand(self.c[i].shape))
 
         for i in range(len(self.d)):
-            self.d[i] = variance * (np.random.randn(self.d[i].shape))
+            self.d[i] = variance * (np.random.rand(self.d[i].shape))
 
         for i in range(len(self.f)):
-            self.f[i] = variance * (np.random.randn(self.f[i].shape))
+            self.f[i] = variance * (np.random.rand(self.f[i].shape))
 
 
     def initrand(self):
@@ -360,21 +350,21 @@ class pmodel:
         np.random.seed(1)
 
         for i in range(len(self.a)):
-            self.a[i] = xrange * (np.random.randn(len(self.a[i]))+bias)
+            self.a[i] = xrange * (np.random.rand(len(self.a[i]))+bias)
 
         for i in range(len(self.b)):
-            self.b[i] = xrange * (np.random.randn(len(self.b[i]))+bias)
+            self.b[i] = xrange * (np.random.rand(len(self.b[i]))+bias)
 
 
         for i in range(len(self.c)):
-            self.c[i] = xrange * (np.random.randn(len(self.c[i]))+bias)
+            self.c[i] = xrange * (np.random.rand(len(self.c[i]))+bias)
 
         for i in range(len(self.d)):
-            self.d[i] = xrange * (np.random.randn(len(self.d[i]))+bias);
+            self.d[i] = xrange * (np.random.rand(len(self.d[i]))+bias);
 
 
         for i in range(len(self.f)):
-            self.f[i] = xrange * (np.random.randn(len(self.f[i]))+bias);
+            self.f[i] = xrange * (np.random.rand(len(self.f[i]))+bias);
 
     ## --- End init functions
     ##--------------------------------------------------
@@ -1002,7 +992,7 @@ class pmodel:
         else:
             dh = np.append([1], self.d[0])
 
-        lp = len(self.period[0])
+        lp = len(self.period)
 
 
         for i in range(lp):

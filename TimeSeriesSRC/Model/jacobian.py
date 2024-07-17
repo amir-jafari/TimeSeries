@@ -72,7 +72,7 @@ def func_jacobian ( pmod, delta, y, u=np.array([])):
     n_y = len(y);
     X = pmod.getmX();
     n_X = len(X);
-    X1 = X
+    X1 = np.copy(X)
 
     if uflag:
         yhat = pmod.predict(y, u)
@@ -82,10 +82,11 @@ def func_jacobian ( pmod, delta, y, u=np.array([])):
     e = y - yhat
     j = np.array([])
 
-    for i in range(n_X):
-        X1[i] = X[i] - delta
+    pmod2 = copy.deepcopy(pmod)
 
-        pmod2 = copy.deepcopy(pmod)
+    for i in range(n_X):
+
+        X1[i] = X[i] - delta
         pmod2.setmX(X1)
 
         if uflag:
