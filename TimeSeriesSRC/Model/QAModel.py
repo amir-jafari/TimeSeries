@@ -15,13 +15,13 @@ from TimeSeriesSRC.Model.selpmod import func_selpmod as selpmod
 
 def read_data(file):
     path = os.getcwd()
-    path_file = ".." + os.path.sep + "testdata" + os.path.sep + file
+    path_file = ".." + os.path.sep + "TestData" + os.path.sep + file
     data = np.genfromtxt(path_file, delimiter=',')
     return data
 
 def read_matfile(file):
     path = os.getcwd()
-    path_file = ".." + os.path.sep + "testdata" + os.path.sep + file
+    path_file = ".." + os.path.sep + "TestData" + os.path.sep + file
     data = scipy.io.loadmat(path_file)
     return data
 def test_bjtf():
