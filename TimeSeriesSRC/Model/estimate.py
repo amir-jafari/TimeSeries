@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 from ..Model.estimlm import func_estimlm as estimlm
 
@@ -8,11 +9,13 @@ from ..basefunctions.sdiff import func_sdiff as sdiff
 
 
 
-def estimate(pmod, y, u=[]):
+def estimate(pmod, y, u=np.array([])):
+
+    math_functions = dir(math)
 
     pmod.set_data(y, u)
 
-    uflag = len(u) > 0
+    uflag = (len(u) > 0)
 
     if uflag:
         u = makerow(u)
@@ -23,38 +26,51 @@ def estimate(pmod, y, u=[]):
     # Preprocess the sequences
     upreproc = pmod.upreproc
 
-    if len(upreproc[0])>0 and len(upreproc.shape)==2:
-        pr = upreproc.shape[0]
+    pr = len(upreproc)
+    if (uflag and pr != 0):
+        #if (pr != 1 and pr != u.shape[1]):
+        #    xerror = 'rows of upreproc should either equals 1 or the number of inputs. '
+        #    raise Exception(xerror)
 
-        if (uflag and pr != 0):
-            if (pr != 1 and pr != u.shape[1]):
-                xerror = 'rows of upreproc should either equals 1 or the number of inputs. '
-                raise Exception(xerror)
-
-            if pr == 1:
-                pc = upreproc[pr-1, :]
-                for i in range(pc):
-                    u = eval(upreproc[pr, i], u)
-
+        for i in range(pr):
+            #u = eval(upreproc[pr, i], u)
+            if upreproc[i] in math_functions:
+                code = 'math.{}(x)'.format(upreproc[i])
             else:
-                for i in range(pr):
-                    pc = len(upreproc[i, :])
-                    for j in range(pc):
-                        if len(upreproc[i, j]) > 0:
-                            u[i, :] = eval(upreproc[i, j], u[i, :])
+                code = '{}(x)'.format(upreproc[i])
 
-        ypreproc = pmod.ypreproc
-        pc = ypreproc.shape[1]  # only one output is possible
-        if (pc and ypreproc.shape[0] != 1):
-            xerror = 'ypreproc should have only one row. '
-            raise Exception(xerror)
+            for j in range(len(u)):
+                uj = list(u[j])
+                uj = list(map(lambda x: eval(code, globals(), {'x': x}), uj))
+                uj = np.array(uj)
+                u[j] = uj
 
-        if pc != 0:
-            for i in range(pc):
-                y = eval(ypreproc[i], y)
+
+    ypreproc = pmod.ypreproc
+
+    pc = len(ypreproc)  # only one output is possible
+    #if (pc>1):
+    #    xerror = 'ypreproc should have only one row. '
+    #    raise Exception(xerror)
+
+    if pc != 0:
+        for i in range(pc):
+
+            if ypreproc[i] in math_functions:
+                code = 'math.{}(x)'.format(ypreproc[i])
+            else:
+                code = '{}(x)'.format(ypreproc[i])
+
+            for j in range(len(y)):
+                yj = list(y[j])
+                print(yj)
+                yj = list(map(lambda x: eval(code, globals(), {'x': x}), yj))
+                yj = np.array(yj)
+                y[j] = yj
 
     # Difference the sequences
-    period = [1, pmod.period]
+    period = [ x for x in pmod.period]
+    period.insert(0, 1)
     diff = pmod.diff
     for i in range(len(diff)):
         d = diff[i]
@@ -75,8 +91,8 @@ def estimate(pmod, y, u=[]):
     ystru['y'] = y
     ystru['m'] = ystru['m'][0, :len(y[0])].reshape(1,-1)
 
-    if uflag:
 
+    if uflag:
         if pmod.estimFcn == 'estimlm':
             pmod, trec, stat = estimlm(pmod,ystru,u)
     else:

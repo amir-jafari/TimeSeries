@@ -60,6 +60,7 @@ def func_pmodmse (pmod,y,u=[]):
 
 	ystru, y, m = sepym(y);
 
+
 	if uflag:
 		yhat = pmod.predict(y, u)
 
@@ -68,10 +69,10 @@ def func_pmodmse (pmod,y,u=[]):
 
 	e = y- yhat
 
-
 	m = makerow(m)
 
-	res =e * m * e
+	res =e *m* e
+
 	mse = sum(sum(res)) / ( e.shape[0] * e.shape[1] )
 
 	return mse,e

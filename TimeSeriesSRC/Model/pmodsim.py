@@ -1,4 +1,6 @@
 import numpy as np
+import math
+from scipy.signal import lfilter
 
 from ..basefunctions.makerow import func_makerow as makerow
 
@@ -57,55 +59,63 @@ def func_pmodsim (pmod,e,u=[]):
 		preprocessing
 	'''
 
+	math_functions = dir(math)
 	# preprocessing
 	uflag = len(u)>0
 	if uflag:
 		u = makerow(u)
 
 	upreproc = pmod.upreproc
-	pr = upreproc.shape[0]
+	pr = len(upreproc)
 	if (uflag & pr!=0):
-		if (pr!=1 & pr!= u.shape[0] ):
-			xerror='rows of upreproc should either equals 1 or the number of inputs. '
-			raise Exception (xerror)
+		#if (pr!=1 & pr!= u.shape[0] ):
+		#	xerror='rows of upreproc should either equals 1 or the number of inputs. '
+		#	raise Exception (xerror)
 
 		if pr == 1:
 			pc = upreproc[pr,:]
 			for i in range(pc):
 				u = eval(upreproc[pr, i], u)
 
-		else:
-			for i in range(pr):
-				pc = len(upreproc[i,:])
-				for j in range(pc):
-					if len(upreproc[i, j])>0:
-						u[i,:] = eval(upreproc[i, j], u[i,:])
+		for i in range(pr):
+			if upreproc[i] in math_functions:
+				code = 'math.{}(x)'.format(upreproc[i])
+			else:
+				code = '{}(x)'.format(upreproc[i])
+
+			for j in range(len(u)):
+				uj = list(u[j])
+				uj = list(map(lambda x: eval(code, globals(), {'x': x}), uj))
+				uj = np.array(uj)
+				u[j] = uj
+
 
 	if pmod.type== 'regr':
-		# regression model
 
+		# regression model
 		ru, cu = u.shape
-		udelay=np.zeroes(ru,cu)
+		udelay=np.zeros((ru,cu))
 		idel = 0
 		for i in range(ru):
-			if (pmod.delay)==0:
+			if len(pmod.delay)==0:
 				idel = 0
 			else:
-				idel = pmod.delay[i]
+				idel = int(pmod.delay[i])
 
-			udelay[i,:] = np.add( np.zeros(1, idel) , u[i, : (cu - idel)])
+			udelay[i,:] = np.append( np.zeros(idel) , u[i, : (cu - idel)])
 
-			u1 = np.add(np.ones(1, len(e)), udelay)
-			y = pmod.b[0] * u1 + e
+		u1 = np.append(np.ones((1, e.shape[1])), udelay, axis=0)
+		b = np.array(pmod.b).reshape(1,-1)
+		y = b @ u1 + e
 
 	else: # bjtf, arma, armax, arx model
 
 		# Expand the parameter vectors into g and h form
-		ng, dg, nh, dh = pmod.getGH
+		ng, dg, nh, dh = pmod.getGH()
 
 		num_inputs = len(ng)
-		diff = pmod.diff;
-		period = pmod.period;
+		diff = pmod.diff
+		period = pmod.period
 
 		# Add the differencing terms into H
 		for i in range(diff[0]):
@@ -114,25 +124,38 @@ def func_pmodsim (pmod,e,u=[]):
 		lp = len(period)
 
 		for i in range(lp):
-			per = period(i);
-			ddh = np.add([1], np.zeros(1, per - 1) - 1)
+			per = period[i]
+			ddh = np.add([1], np.zeros((1, per - 1)) - 1)
 			for j in range(diff[i + 1]):
 				dh = np.conv(dh, ddh)
 
 		# Simulate the prediction model
-		y = filter(nh, dh, e)
+		y = lfilter(nh, dh, e)
+
 		for i in range(num_inputs):
-			y = y + filter(ng[i], dg[i], u[i,:])
+			y = y + lfilter(ng[i], dg[i], u[i,:])
 
 	# post processing
 	ypostproc = pmod.ypostproc;
-	pc = ypostproc.shape[1] # only one output is possible
-	if (pc & ypostproc.shape[0] !=1):
-		xerror='ypostproc should have only one row. '
+	pc = len(ypostproc)# only one output is possible
+	'''
+	if (pc>0 & type(ypostproc[0]) == 'list' ):
+		xerror='ypostproc should have only one row. '[i]
 		raise Exception (xerror)
+    '''
 
 	if pc!=0:
+
 		for i in range(pc):
-			y = eval(ypostproc[i], y)
+			if ypostproc[i] in math_functions:
+				code = 'math.{}(x)'.format(ypostproc[i])
+			else:
+				code = '{}(x)'.format(ypostproc[i])
+
+			for j in range(len(y)):
+				yj = list(y[j])
+				yj = list(map(lambda x: eval(code, globals(), {'x': x}), yj))
+				yj = np.array(yj)
+				y[j] = yj
 
 	return y

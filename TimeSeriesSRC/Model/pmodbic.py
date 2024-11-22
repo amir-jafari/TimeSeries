@@ -57,11 +57,11 @@ def func_pmodbic (pmod,y,u=[]) :
 
 	'''
 
-	uflag = len(u)>0
+	uflag = (len(u)>0)
 
 	# Difference the sequences
 
-	period = np.add([1], pmod.period)
+	period = np.append([1], pmod.period)
 	diff = pmod.diff
 
 	for i in range(len(diff)):

@@ -101,14 +101,13 @@ def func_jacobian ( pmod, delta, y, u=np.array([])):
 
     j = j.reshape( n_X, -1)
     m = func_makerow(m)
-    M = spdiags(m[0], 0, m.shape[1] , m.shape[1]).toarray()
+    M = np.identity(m.shape[1])
 
-    jj = np.dot(np.dot(j , M) , j.transpose())
-    je = np.dot(np.dot(j , M) , e.transpose())
+    jj= np.dot(np.dot(j, M), j.T)
+    je = np.dot(np.dot(j, M), e.T)
+    normgX = np.linalg.norm(je)
 
 
-    normgX = np.sqrt(np.dot(je.transpose(),je))
-
-    return je, jj, normgX[0][0]
+    return je, jj, normgX
 
     ## ----------------------------------------------------------------------

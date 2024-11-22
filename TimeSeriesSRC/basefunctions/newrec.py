@@ -18,11 +18,11 @@ def func_newrec (epochs, *argv) :
 	names = argv
 
 	epoch = [i for i in range(epochs)]
-	blank = [np.array([]) for i in range(epochs)]
+	blank = [0 for i in range(epochs)]
 	tr = {}
 	for i in range(len(names)):
 		tr[names[i]] = blank
 
-	tr['epoch'] = epoch
+	#tr['epoch'] = epoch
 
 	return tr

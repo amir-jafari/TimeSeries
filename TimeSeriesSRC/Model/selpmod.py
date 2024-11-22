@@ -7,7 +7,7 @@ from .model import pmodel
 from .pmodbic import func_pmodbic as pmodbic
 from .pmodaic import func_pmodaic as pmodaic
 from .estimate import estimate as estimate
-def func_selpmod (filename,y,u):
+def func_selpmod (filename,y,u=[]):
 	'''
 		SELPMOD Select the best prediction model based on AIC and BIC criteria.
 		
@@ -116,14 +116,14 @@ def func_selpmod (filename,y,u):
 
 	for rec in data['models']:
 		xtype =''
-		na = np.array([])
-		nb = np.array([])
-		nc = np.array([])
-		nd = np.array([])
-		nf = np.array([])
-		diff = np.array([])
-		delay = np.array([])
-		per = np.array([])
+		na = []
+		nb = []
+		nc = []
+		nd = []
+		nf = []
+		diff = []
+		delay = []
+		per = []
 
 		line = 0
 		for key, value in rec.items():
@@ -170,15 +170,14 @@ def func_selpmod (filename,y,u):
 			delay = np.array([0, 1])
 
 
-		na = na.reshape(1,-1)
-		nb = nb.reshape(1,-1)
-		nc = nc.reshape(1,-1)
-		nd = nd.reshape(1,-1)
-		nf = nf.reshape(1,-1)
-		diff = diff.reshape(1,-1)
-		delay = delay.reshape(1,-1)
-		per = per.reshape(1,-1)
-
+		#na = na.reshape(1,-1)
+		#nb = nb.reshape(1,-1)
+		#nc = nc.reshape(1,-1)
+		#nd = nd.reshape(1,-1)
+		#nf = nf.reshape(1,-1)
+		#diff = diff.reshape(1,-1)
+		#delay = delay.reshape(1,-1)
+		#per = per.reshape(1,-1)
 
 		# automatic model selection switch type
 
@@ -186,7 +185,10 @@ def func_selpmod (filename,y,u):
 			lna = 1
 			lnb = u.shape[0]
 			lDel = lnb
-			A = na
+			A = np.array(na)
+			A = A.reshape(1,-1)
+			nb= nb.reshape(1,-1)
+			delay = delay.reshape(1,-1)
 			for i in range(lnb):
 				A = gcombvec(A, nb)
 
@@ -196,46 +198,71 @@ def func_selpmod (filename,y,u):
 			TIter = A.shape[1]
 
 		elif xtype == 'arma':
-			lnc = len(per[0]) + 1
+			lnc = len(per) + 1
 			lnd = lnc
 			lDiff = lnc
-			lPer = len(per[0])
+			lPer = len(per)
+			nc = np.array(nc).reshape(1,-1)
+			nd = np.array(nd).reshape(1,-1)
+			diff = np.array(diff).reshape(1,-1)
+			per = np.array(per).reshape(1, -1)
+
 			A = nc
 			for i in range(lnc - 1):
-				A = gcombvec(A, nc[0])
+				A = gcombvec(A, nc)
 
 			for i in range(lnd):
-				A = gcombvec(A, nd[0])
+				A = gcombvec(A, nd)
+
 
 			for i in range(lDiff):
-				A = gcombvec(A, diff[0])
+				A = gcombvec(A, diff)
+
 
 			for i in range(lPer):
-				A = gcombvec(A, per[0])
+				A = gcombvec(A, per)
+
 
 		elif xtype == 'armax':
 			lna = 1;
 			lnb = u.shape[0]
 			lnc = 1
 			lDel = lnb
+			na=np.array(na).reshape(1,-1)
+			nb=np.array(nb).reshape(1,-1)
+			nc=np.array(nc).reshape(1,-1)
+			delay=np.array(delay).reshape(1,-1)
+
 			A = na
 			for i in range(lnb):
 				A = gcombvec(A, nb)
-			A = gcombvec(A, nc);
+
+			A = gcombvec(A, nc)
+
 			for i in range(lDel):
 				A = gcombvec(A, delay)
 
 		elif xtype == 'bjtf':
 			lnb = u.shape[0]
-			lnc = len(per[0]) + 1
+			lnc = len(per) + 1
 			lnd = lnc
 			lnf = lnb
 			lDel = lnb
 			lDiff = lnc
-			lPer = len(per[0])
+			lPer = len(per)
+
+			nb = np.array(nb).reshape(1,-1)
+			nc = np.array(nc).reshape(1,-1)
+			nd = np.array(nd).reshape(1,-1)
+			nf = np.array(nf).reshape(1,-1)
+			delay= np.array(delay).reshape(1,-1)
+			diff = np.array(diff).reshape(1,-1)
+			per = np.array(per).reshape(1, -1)
+
 			A = nb
-			#for i in range(lnb):
-			#	A = gcombvec(A, nb)
+			for i in range(lnb-1):
+				A = gcombvec(A, nb)
+
 			for i in range(lnc):
 				A = gcombvec(A, nc)
 
@@ -257,6 +284,7 @@ def func_selpmod (filename,y,u):
 		elif xtype == 'regr':
 			lnb = u.shape[0] + 1
 			lDel = lnb - 1
+			delay = np.array(delay).reshape(1,-1)
 			A = delay
 			for i in range(lDel - 1):
 				A = gcombvec(A, delay)
@@ -272,74 +300,59 @@ def func_selpmod (filename,y,u):
 		minbic = float('Inf')
 		iter = 0
 
-		A = A.transpose()
+		A = A.T
 
 		for i in range(len(A)):
-			temp = A[i]
+			temp = A[i].astype(int)
 
 			# get model inputs switch type
 			if xtype== 'arx':
-				na = temp[0]
-				temp[0] = []
-				nb = temp[:lnb]
-				temp[: lnb] = []
-				delay = temp
+				na = list(temp[0:1])
+				nb = list(temp[1:lnb+1])
+				#temp[: lnb] = np.zeros((lnb))
+				delay = list(temp[lnb+1:])
+
+				pmodt = pmodel(xtype, na=na, nb=nb, delay=delay);
 
 			elif xtype == 'arma':
 				nc = temp[:lnc]
-				temp[: lnc] = []
-				nd = temp[:lnd]
-				temp[: lnd] = [];
-				diff = temp[:lDiff]
-				temp[: lDiff] = []
-				per = temp
+				nd = temp[lnc:lnc+lnd]
+				diff = temp[lnd+lnd:lnc+lnc+lDiff]
+				per = temp[lnc+lnc+lDiff:]
+
+				pmodt = pmodel(xtype, nc=nc, nd=nd, diff=diff, per=per)
 
 			elif xtype == 'armax':
-				na = temp[lna]
-				temp[0] = [];
-				nb = temp[:lnb]
-				temp[: lnb] = []
-				nc = temp[lnc]
-				temp[0] = []
-				delay = temp
+				na = temp[:lna]
+				nb = temp[lna:lna+lnb]
+				nc = temp[lna+lnb:lna+lnb+lnc]
+				delay = temp[lna+lnb+lnc:]
+
+				pmodt = pmodel(xtype, na=na,nb=nb, nc=nc, delay=delay)
 
 			elif xtype == 'bjtf':
+				print(temp)
 				nb = temp[:lnb]
 				temp = temp[lnb:]
-
 				nc = temp[:lnc]
 				temp = temp[lnc: ]
-
 				nd = temp[:lnd]
 				temp = temp[lnd:]
-
 				nf = temp[:lnf]
 				temp = temp[lnf : ]
-
 				delay = temp[:lnb]
 				temp = temp[lnb : ]
-
 				diff = temp[:lnc]
 				temp = temp[lnc :]
 				per = temp
 
+				pmodt = pmodel(xtype, nb=nb, nc=nc, nd=nd, nf=nf, delay=delay, diff=diff, per = per)
+
 			elif xtype == 'regr':
 				delay = temp
-				nb = lnb - 1
+				nb = [lnb - 1]
+				pmodt = pmodel(xtype=xtype, nb=nb, delay=delay)
 
-			na = na.reshape(1,-1)
-			nb = nb.reshape(1,-1)
-			nc = nc.reshape(1,-1)
-			nd = nd.reshape(1,-1)
-			nf = nf.reshape(1,-1)
-			delay = delay.reshape(1,-1)
-			diff = diff.reshape(1,-1)
-			per = per.reshape(1,-1)
-
-			pmodt = pmodel(xtype=xtype, na=na, nb=nb, nc=nc, nd=nd, nf=nf, delay=delay, diff=diff, per=per)
-
-
-			pmodt.estimParams.show = np.NaN
 			pmodt.estimParams.epochs = 50
 			pmodt.estimParams.goal = 0.01
 
@@ -354,12 +367,14 @@ def func_selpmod (filename,y,u):
 				bictmp = pmodbic(pmodt, y, u)
 
 			aic = [aic, aictmp]
+
 			if minaic > aictmp:
 				minaic = aictmp
 				aicmod = pmodt
 				aicstat = stat
 
 			bic = [bic, bictmp]
+
 			if minbic > bictmp:
 				minbic = bictmp
 				bicmod = pmodt
@@ -377,7 +392,6 @@ def func_selpmod (filename,y,u):
 		aic = aic.append(A)
 		bic = bic.append(A)
 
-
 		res = {
 			'model':xtype,
 			'aic' : aic,
@@ -389,7 +403,6 @@ def func_selpmod (filename,y,u):
 		}
 
 		estpmod = np.add(result, [res])
-
 
 	return estpmod
 

@@ -2,7 +2,7 @@ import numpy as np
 
 from ..basefunctions.sdiff import func_sdiff as sdiff
 
-def func_pmodaic (pmod,y,u) :
+def func_pmodaic (pmod,y,u=[]) :
 	'''
 		PMODAIC Compute the AIC for prediction model pmod and data u and y.
 		
@@ -57,7 +57,7 @@ def func_pmodaic (pmod,y,u) :
 
 	'''
 
-	uflag = len(u) > 0
+	uflag = (len(u) > 0)
 
 	# Difference the sequences
 	period = np.add([1], pmod.period)

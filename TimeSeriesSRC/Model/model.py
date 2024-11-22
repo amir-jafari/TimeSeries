@@ -21,7 +21,7 @@ class Parameters:
     delta : float
 
 class pmodel:
-    def __init__(self, xtype, na=[0,1], nb=[0], nc=[0], nd=[0], nf=[0], delay=[1], diff=[0], per=[], upre=[[]], ypre=[[]], ypost=[[]], eFcn='estimlm', indexFcn='pmodmse', initFcn='initrand'):
+    def __init__(self, xtype, na=[0,1], nb=[], nc=[], nd=[], nf=[], delay=[], diff=[0], per=[], upre=[], ypre=[], ypost=[], eFcn='estimlm', indexFcn='pmodmse', initFcn='initrand'):
         self.na = na
         self.nb = nb
         self.nc = nc
@@ -47,13 +47,14 @@ class pmodel:
                                       mu_max=1e10,
                                       show=10,
                                       max_time=float('inf'),
-                                      delta=1e-7
+                                      delta=1.0000e-07
                                       )
 
         self.b = []
         self.c = []
         self.d = []
         self.f = []
+        self.a = []
 
 
         self.new_model()
@@ -109,18 +110,26 @@ class pmodel:
     #----------------------------------------------------
 
     def newregr(self):
-        self.a = []
-        self.b = np.zeros(self.nb + 1)
+
+        if len(self.nb)>1:
+            xerror = 'nb must contain only one element'
+            raise Exception(xerror)
+
+        if len(self.delay)==0:
+            self.delay=np.zeros(self.nb[0])
+
+        self.a = [[]]
+        self.b = [np.zeros(self.nb[0] + 1)]
         self.c = []
         self.d = []
         self.f = []
-        if len(self.delay) != self.nb:
+
+        if len(self.delay) != int(self.nb[0]):
             xerror= 'delay and nb must have the same # of terms.'
             raise Exception(xerror)
 
         self.diff = np.array([[]])
         self.period = np.array([[]])
-
 
     #-----------------------------------------------------
 
@@ -192,92 +201,99 @@ class pmodel:
     ##--------------------------------------------------
     def newarx(self):
 
-        if self.na < 0:
+        if any(self.na) < 0:
             xerror='na must be positive integers.'
             raise Exception (xerror)
 
+        if type(self.nb)  is not list:
+            lg =  self.nb.shape
 
-        for i in range(len(self.nb)):
-            if self.nb(i) < 0:
-                xerror='All nb(i) must be positive integers.'
-                raise Exception(xerror)
+            if len(lg) > 1:
+                self.nb.reshape(1,-1)
 
-        self.a = list(np.zeros(self.na))
+            self.nb  = list(self.nb[0])
+
+        if any(self.nb) < 0:
+            xerror='All nb(i) must be positive integers.'
+            raise Exception(xerror)
+
+        self.a = [(np.zeros(len(self.na)))]
+
 
         nnb = len(self.nb)
         for i in range(nnb):
-            self.b[i] = np.zeros(list(self.nb[i]) + 1)
+            self.b.append(np.zeros((int(self.nb[i])+ 1)))
 
-        self.c = np.array([[]])
-        self.d = np.array([[]])
-        self.f = np.array([[]])
+        self.c = [[]]
+        self.d = [[]]
+        self.f = [[]]
 
         if len(self.delay) != nnb:
             xerror='delay and nb must have the same # of terms.'
             raise Exception(xerror)
 
-        self.diff = np.array([[0]])
-        self.period = np.array([[]])
-
+        self.diff = np.array([0])
+        self.period = np.array([])
 
     #-----------------------------------------------------------
     def newarmax(self):
-        if self.na < 0:
+        if any(self.na) < 0:
             xerror='na must be positive integers.'
             raise Exception(xerror)
 
-        for i in range(len(self.nb)):
-            if self.nb[i] < 0:
-                xerror='All nb(i) must be positive integers.'
-                raise Exception(xerror)
+        if any(self.nb) < 0:
+            xerror='All nb(i) must be positive integers.'
+            raise Exception(xerror)
 
-        if self.nc < 0:
+        if any(self.nc) < 0:
             xerror='nc must be positive integers.'
             raise Exception(xerror)
 
-        self.a[0] = np.zeros(1, self.na)
+        self.a.append(np.zeros(( self.na)))
         nnb = len(self.nb)
         for i in range(nnb):
-            self.b[i] = np.zeros((1, self.nb[i] + 1))
+            self.b.append(np.zeros((self.nb[i] + 1)))
 
-        self.c[0] = np.zeros((1, self.nc))
+        self.c.append(np.zeros((self.nc)))
         self.d = np.array([[]])
         self.f = np.array([[]])
         if len(self.delay) != nnb:
             xerror='delay and nb must have the same # of terms.'
             raise Exception(xerror)
 
-        self.diff = np.array([[0]])
-        self.period = np.array([[]])
+        self.diff = np.array([0])
+        self.period = np.array([])
 
     def newarma(self):
-        for i in range(len(self.nc)):
-            if self.nc[i] < 0:
-                xerror='All nc(i) must be positive integers.'
-                raise Exception(xerror)
 
-        for i in range(len(self.nd)):
-            if self.nd[i] < 0:
-                xerror='All nd(i) must be positive integers.'
-                raise Exception(xerror)
+        if any(self.nc) < 0:
+            xerror='All nc(i) must be positive integers.'
+            raise Exception(xerror)
 
+        if any(self.nd) < 0:
+            xerror='All nd(i) must be positive integers.'
+            raise Exception(xerror)
 
         self.a = np.array([[]])
         self.b = np.array([[]])
 
         nnc = len(self.nc)
+
         for i in range(nnc):
-            self.c[i] = np.zeros(1, self.nc[i])
+            self.c.append(np.zeros((self.nc[i])))
+
         nnd = len(self.nd)
+
         if nnd != nnc:
             xerror='nc and nd must have the same # of terms.'
             raise Exception(xerror)
 
         for i in range(nnd):
-            self.d[i] = np.zeros(1, self.nd[i])
+            self.d.append(np.zeros((self.nd[i])))
 
         self.f = np.array([[]])
         self.delay = np.array([[]])
+
         if len(self.diff) != nnc:
             xerror='nc and diff must have the same # of terms.'
             raise Exception(xerror)
@@ -286,7 +302,7 @@ class pmodel:
             xerror='per must have one less term than nc.'
             raise Exception(xerror)
 
-        self.upreproc = np.array([[]])
+        self.upreproc = []
 
 
 ##--------------------------------------------------
@@ -324,19 +340,19 @@ class pmodel:
         variance = 0.125;
 
         for i in range(len(self.a)):
-            self.a[i] = variance * (np.random.rand(self.a[i].shape))
+            self.a[i] = variance * (np.random.randn(self.a[i].shape))
 
         for i in range(len(self.b)):
-            self.b[i] = variance * (np.random.rand(self.b[i].shape))
+            self.b[i] = variance * (np.random.randn(self.b[i].shape))
 
         for i in range(len(self.c)):
-            self.c[i] = variance * (np.random.rand(self.c[i].shape))
+            self.c[i] = variance * (np.random.randn(self.c[i].shape))
 
         for i in range(len(self.d)):
-            self.d[i] = variance * (np.random.rand(self.d[i].shape))
+            self.d[i] = variance * (np.random.randn(self.d[i].shape))
 
         for i in range(len(self.f)):
-            self.f[i] = variance * (np.random.rand(self.f[i].shape))
+            self.f[i] = variance * (np.random.randn(self.f[i].shape))
 
 
     def initrand(self):
@@ -347,14 +363,11 @@ class pmodel:
         xrange = hlim - llim;
         bias = llim / xrange;
 
-        np.random.seed(1)
-
         for i in range(len(self.a)):
             self.a[i] = xrange * (np.random.rand(len(self.a[i]))+bias)
 
         for i in range(len(self.b)):
             self.b[i] = xrange * (np.random.rand(len(self.b[i]))+bias)
-
 
         for i in range(len(self.c)):
             self.c[i] = xrange * (np.random.rand(len(self.c[i]))+bias)
@@ -412,32 +425,37 @@ class pmodel:
     def getmXarx(self):
         X = []
 
-        X = np.add(X,np.transpose(self.a[0]))
+        X = [np.transpose(self.a[0])]
         nnb = len(self.b)
         for i in range(nnb):
-            X = np.add(X, np.transpose(self.b[i]))
+            X = np.append(X, np.transpose(self.b[i]))
+
+        return X
 
     def getmXarmax(self):
         X = []
 
-        X = np.add(X, np.transpose(self.a[0]))
+        X = np.append(X, np.transpose(self.a[0]))
         nnb = len(self.b)
         start = 0;
         for i in range(nnb):
-            X = np.add(X, np.transpose(self.b[i]))
+            X = np.append(X, np.transpose(self.b[i]))
 
-        X = np.add(X,np.transpose(self.c[0]))
+        X = np.append(X,np.transpose(self.c[0]))
+
+        return X
 
     def getmXarma(self):
         X = []
 
-        nnc = len(self.c[0])
+        nnc = len(self.c)
         for i in range(nnc):
-            X = np.add(X, np.transpose(self.c[i]))
-
-        nnd = len(self.d[0])
+            X = np.append(X, np.transpose(self.c[i]))
+        nnd = len(self.d)
         for i in range(nnd):
-            X = np.add(X, np.transpose(self.d[i]))
+            X = np.append(X, np.transpose(self.d[i]))
+
+        return X
 
     ##-------------------------------------------------
     ##  SETMX functions -------------------------------
@@ -457,7 +475,7 @@ class pmodel:
             self.setmXarmax(X)
 
     def setmXregr(self,X):
-        self.b[0] = np.transpose(X[:len(self.b[1])])
+        self.b[0] = np.transpose(X[:len(self.b[0])])
 
         # clear all other unused parameters
 
@@ -498,73 +516,74 @@ class pmodel:
 
 
     def setmXarx(self,X):
+
         start = 0
         order = len(self.a[0])
-        self.a[0] = np.transpose(X[(start + 1):(start + order)])
+        self.a[0] = np.transpose(X[start:(start + order)])
         start = start + order;
         nnb = len(self.b)
         for i in range(nnb):
             order = len(self.b[i])
-            self.b[i] = np.transpose(X[(start + 1):(start + order)])
+            self.b[i] = np.transpose(X[start:(start + order)])
             start = start + order
 
-        self.c = np.array([[]])
-
+        self.c = []
         # clear all other unused parameters
-        self.d = np.array([[]])
-        self.f = np.array([[]])
+        self.d = []
+        self.f = []
 
 
     def setmXarmax(self,X):
+
         start = 0
         order = len(self.a[0])
-        self.a[1] = np.transpose(X[(start + 1):(start + order)])
+        self.a[0] = np.transpose(X[start :(start + order)])
         start = start + order
         nnb = len(self.b)
+
         for i in range(nnb):
-            order = len(self.b[0])
-            self.b[i] = np.transpose(X[(start + 1):(start + order)])
+            order = len(self.b[i])
+            self.b[i] = np.transpose(X[start:(start + order)])
             start = start + order
 
         order = len(self.c[0])
-        self.c[0] = np.transpose(X[start + 1:(start + order)])
+        self.c[0] = np.transpose(X[start:(start + order)])
 
         # clear all other unused parameters
 
-        self.d = np.array([[]])
-        self.f = np.array([[]])
+        self.d = []
+        self.f = []
 
 
     def setmXarma(self,X):
         start = 0;
         nnc = len(self.c)
         for i in range(nnc):
-            order = len(self.c[0])
-            self.c[i] = np.transpose(X[(start + 1):(start + order)])
+            order = len(self.c[i])
+            self.c[i] = np.transpose(X[start:(start + order)])
             start = start + order
 
         nnd = len(self.d)
         for i in range(nnd):
             order = len(self.d[i])
-            self.d[i] = np.transpose(X[(start + 1):(start + order)])
+            self.d[i] = np.transpose(X[start:(start + order)])
             start = start + order
 
         # clear all other unused parameters
-        self.a = np.array([[]])
-        self.b = np.array([[]])
-        self.f = np.array([[]])
+        self.a = []
+        self.b = []
+        self.f = []
 
     ## predict functions ------------------------------
     ## Predict
     ## ==================================================
 
-    def predict(self, y, u=np.array([[]])):
+    def predict(self, y, u=[]):
 
         if  len(u)==0:
             uflag = False
         else:
             uflag = True
-
 
         predFcn = self.type
 
@@ -609,22 +628,25 @@ class pmodel:
             xerror = 'The number of rows of u does not match the number of elements in b'
             raise Exception(xerror)
 
-            # Compute the prediction.
-        udelay = np.zeros(m, n)
+        # Compute the prediction.
+
+        udelay = np.zeros((m, n))
+
         for i in range(m):
-            if self.delay == None:
-                idel = 0;
+            if len(self.delay) == 0:
+                idel = 0
             else:
-                idel = self.delay[i];
+                idel = int(self.delay[i])
 
-            udelay[i, :] = [np.zeros(1, idel), u[i, 0: n - idel]]
+            udelay[i, :] = np.append(np.zeros((idel)), u[i, :( n - idel)])
 
-        u1 = np.ones(1, n) + udelay
-        yhat = self.b[0] * u1
+        u1 = np.concatenate((np.ones((1,n)) , udelay))
+
+        yhat = self.b @ u1
 
         return yhat
 
-    def predbjtf(self, y, u=np.array([[]])):
+    def predbjtf(self, y, u=[] ):
         # Expand the parameter vectors into g and h form
         ng, dg, nh, dh = self.getGH()
 
@@ -638,8 +660,10 @@ class pmodel:
             nh = np.append(nh, np.zeros(ldh - lnh))
 
         # Make  sure that the number of inputs is correct.
-        m, n = u.shape
-        if m!=num_inputs:
+
+        m= u.shape
+
+        if m[0] !=num_inputs:
             xerror='The number of rows of u does not match the number of cells in b'
             raise Exception (xerror)
 
@@ -660,12 +684,13 @@ class pmodel:
 
         # Make the numerator and denominator of h the same size.
         num_inputs = len(self.b)
+
         lnh = len(nh)
         ldh = len(dh)
         if lnh > ldh:
-            dh = np.add(dh, np.zeros(1, lnh - ldh))
+            dh = np.append(dh, np.zeros((1, lnh - ldh)))
         elif ldh > lnh:
-            nh = np.add(nh, np.zeros(1, ldh - lnh))
+            nh = np.append(nh, np.zeros((1, ldh - lnh)))
 
 
         # Make sure tha the number of inputs is correct.
@@ -676,7 +701,7 @@ class pmodel:
 
         # Compute the prediction
 
-        yhat = filter((nh - dh), nh, y);
+        yhat = lfilter((nh - dh), nh, y);
         for i in range(num_inputs):
             yhat = yhat + lfilter(ng[i], nh, u[i,:]);
 
@@ -693,10 +718,11 @@ class pmodel:
         num_inputs = len(self.b)
         lnh = len(nh)
         ldh = len(dh)
+
         if lnh > ldh:
-            dh = np.add(dh, np.zeros(1, lnh - ldh))
+            dh = np.append(dh, np.zeros((1, lnh - ldh)))
         elif ldh > lnh:
-            nh = np.add(nh, np.zeros(1, ldh - lnh))
+            nh = np.append(nh, np.zeros((1, ldh - lnh)))
 
         # Make sure that the number of inputs is correct.
         m, n = u.shape
@@ -712,7 +738,6 @@ class pmodel:
 
         return yhat
 
-
     def predarma(self,y=[]):
         # Expand the parameter vectors into g and h form
         ng, dg, nh, dh = self.getGH()
@@ -722,9 +747,9 @@ class pmodel:
         lnh = len(nh)
         ldh = len(dh)
         if lnh > ldh:
-            dh = np.add(dh, np.zeros(1, lnh - ldh))
+            dh = np.append(dh, np.zeros(( lnh - ldh)))
         elif ldh > lnh:
-            nh = np.add(nh, np.zeros(1, ldh - lnh))
+            nh = np.append(nh, np.zeros((ldh - lnh)))
 
         # Compute the prediction.
         yhat = lfilter((nh - dh), nh, y);
@@ -970,7 +995,7 @@ class pmodel:
         dg = []
         for i in range(num_inputs):
             #ng[i] = np.append ( np.zeros(int(self.delay[i]))  , np.array([self.b[i]])   )
-            x1 =  np.append ( np.zeros(int(self.delay[i]))  , np.array([self.b[i]])   )
+            x1 =  np.append (np.zeros(int(self.delay[i]))  , np.array([self.b[i]])   )
             ng.append(x1)
 
             if len(self.f[i])==0:
@@ -994,17 +1019,21 @@ class pmodel:
 
         lp = len(self.period)
 
-
         for i in range(lp):
             per = self.period[i]
-            ctot = per * len(self.c[i])
-            nh1 = np.zeros(1, ctot)
-            nh1[per:ctot]= self.c[i]
+            ctot = per * len(self.c[i+1])
+            nh1 = np.zeros((1, ctot))
+            n_i = 0
+            xc = self.c[i+1]
+            for j in range(per-1, ctot, per):
+                nh1[0, j]= xc[n_i]
+                n_i = n_i +1
             nh1 = np.append([1],nh1)
             nh = np.convolve(nh, nh1, mode = 'full')
-            dtot = per * len(self.d[i])
-            dh1 = np.zeros(1, dtot)
-            dh1[per:dtot] = self.d[i]
+            dtot = per * len(self.d[i+1])
+            dh1 = np.zeros((1, dtot))
+            for j in range(per-1, ctot, per):
+                dh1[0,j:j+len(self.d[i+1])] = self.d[i+1]
             dh1 = np.append([1] ,dh1)
             dh = np.convolve(dh, dh1,mode='full')
 
@@ -1015,24 +1044,23 @@ class pmodel:
     def getGHarx(self):
 
         num_inputs = len(self.b)
-        dg = np.zeros(num_inputs)
-        ng = np.zeros(num_inputs)
+        dg = []
+        ng = []
         for i in range(num_inputs):
-            ng[i] = np.append(np.zeros((1, self.delay[i])), self.b[i])
+            ng.append(np.append(np.zeros((self.delay[i])), self.b[i]))
             if len(self.a)==0:
-                dg[i] = np.array([1])
+                dg.append(np.array([1]))
             else:
-                dg[i] = np.append([1], self.a[0])
-
+                dg.append(np.append([1], self.a))
 
         nh = [1]
+
         if  len(self.a)==0:
             dh = np.array([1])
         else:
-            dh = np.append([1], self.a[0])
+            dh = np.append([1], self.a)
 
         return ng, dg, nh, dh
-
 
     #---------------------------------------------------------------
 
@@ -1073,6 +1101,8 @@ class pmodel:
 
     def getGHarma(self):
 
+        ng = []
+        dg = []
 
         if len(self.c)==0:
             nh = np.array[1]
@@ -1086,20 +1116,19 @@ class pmodel:
 
         lp = len(self.period)
 
-        ng = np.zeros(lp)
-        dg = np.zeros(lp)
-
         for i in range(lp):
             per = self.period[i]
             ctot = per * len(self.c[i + 1])
-            nh1 = np.zeros(1, ctot)
-            nh1[per:ctot] = self.c[i + 1]
+            nh1 = np.zeros((ctot))
+            c_i = self.c[i+1]
+            for j in range(len(c_i)):
+                nh1[(j+1)*per-1] = c_i[j]
             nh1 = np.append([1] ,nh1)
-            nh = np.conv(nh, nh1)
+            nh = np.convolve(nh, nh1)
             dtot = per * len(self.d[i + 1])
-            dh1 = np.zeros(1, dtot)
+            dh1 = np.zeros((dtot))
             dh1[per:dtot] = self.d[i + 1]
             dh1 = np.append([1], dh1)
-            dh = np.conv(dh, dh1);
+            dh = np.convolve(dh, dh1);
 
         return ng, dg, nh, dh

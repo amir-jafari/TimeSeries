@@ -3,7 +3,7 @@ from ..Model.pmodbic import func_pmodbic as pmodbic
 from ..Model.pmodmse import func_pmodmse as pmodmse
 from ..Model.pmodsim import func_pmodsim as pmodsim
 
-def func_calcindex (pmod,y,u):
+def func_calcindex (pmod,y,u=[]):
 	'''
 		CALCINDEX Calculate performance index and prediction model errors
 		
