@@ -24,7 +24,7 @@ def read_matfile(file):
     path_file = ".." + os.path.sep + "TestData" + os.path.sep + file
     data = scipy.io.loadmat(path_file)
     return data
-def test_bjtf():
+def bjtf_testing():
     np.random.seed(seed=1)
     # Set parameters
     nb = [1, 1, 2]
@@ -69,7 +69,7 @@ def test_bjtf():
     print('aa',aa)
     print('bb',bb)
 
-def test_pmodsim_parameters():
+def pmodsim_parameters_testing():
     np.random.seed(seed=1)
     # Set parameters
     nb = [1, 1, 2]
@@ -113,7 +113,7 @@ def test_pmodsim_parameters():
     print('bb', bb)
 
 
-def test_jacobian():
+def jacobian_testing():
     spec = {
         'models': [{
             'type': 'bjtf',
@@ -147,7 +147,7 @@ def test_jacobian():
     je, jj, normgX = jacobian(pmodt, delta, y, u)
     print(je, jj, normgX)
 
-def test_pmodsim():
+def pmodsim_testing():
     e = np.array([0.9501, 0.2311,  0.6068,  0.4860,  0.8913, 0.7621])
     u = np.array([-0.4326, -1.6656,    0.1253,    0.2877, -1.1465,  1.1909])
     xtype = 'bjtf'
@@ -159,7 +159,7 @@ def test_pmodsim():
     y = pmodsim(pmod, e, u)
     print(y)
 
-def test_estimate():
+def estimate_testing():
     y = np.array([-0.1867,    0.5173, -3.4980,    3.0093, -3.0414,    1.5948])
     u = np.array([-0.4326, -1.6656,    0.1253,    0.2877 ,-1.1465,    1.1909])
     y=y.reshape(1, -1)
@@ -177,7 +177,7 @@ def test_estimate():
     y2= pmod.predict(y,u)
     print(y2)
 
-def test_regr():
+def regr_testing():
     y = np.array([-0.1867,  0.5173, -3.4980,  3.0093, -3.0414, 1.5948])
     u = np.array([-0.4326, -1.6656, 0.1253, 0.2877, -1.1465, 1.1909])
 
@@ -195,7 +195,7 @@ def test_regr():
 
     print(y2)
 
-def test_regrall():
+def regrall_testing():
     umat = read_matfile('utest.mat')
     emat = read_matfile('etest.mat')
     u = umat['u']
@@ -220,7 +220,7 @@ def test_regrall():
     print('aa',aa)
     print('bb',bb)
 
-def test_arx():
+def arx_testing():
 
     #Set parameters
     nb = [1, 1, 2]
@@ -255,7 +255,7 @@ def test_arx():
     print('bb',bb)
 
 
-def test_arma():
+def arma_testing():
     #Set parameters
 
     nc = [1, 2, 1]
@@ -292,7 +292,7 @@ def test_arma():
     print(aa)
     print(bb)
 
-def test_armax():
+def armax_testing():
     nb = [1, 1, 2]
     nc = [1]
     na = [2]
@@ -327,7 +327,7 @@ def test_armax():
     print(aa)
     print(bb)
 
-def test_pmodmse():
+def pmodmse_testing():
     np.random.seed(seed=1)
     xtype = 'bjtf'
     nb = [1]
@@ -342,7 +342,7 @@ def test_pmodmse():
     mse, e = pmodmse(pmod, y, u)
     print('mse : {} e :{}'.format(mse,e))
 
-def test_armaSimple():
+def armaSimple_testing():
     y = np.array([-0.1867,    0.5173, -3.4980,    3.0093,   - 3.0414,    1.5948])
     y = y.reshape(1,-1)
     xtype = 'arma'
@@ -360,7 +360,7 @@ def test_armaSimple():
     print(aa)
     print(y2)
 
-def test_aicbic():
+def aicbic_testing():
 
     umat = read_matfile('utest.mat')
     emat = read_matfile('etest.mat')
@@ -397,7 +397,7 @@ def test_aicbic():
     print('AIC',aic)
 
 
-def test_prepost():
+def prepost_testing():
     nb = [1, 1, 2]
     na = [2]
     delay = [1, 2, 3];
@@ -432,7 +432,7 @@ def test_prepost():
     print(aa)
     print(bb)
 
-def test_selmod(ttest):
+def selmod_testing(ttest):
     #ARX
     #Generat3 y, u b an ARX model.
 
@@ -447,6 +447,7 @@ def test_selmod(ttest):
         'b' : [[2, 3]],
         'a' :  [[-1, 0.25]]
             }
+
         ]
     }
 
@@ -588,7 +589,7 @@ def test_selmod(ttest):
     else:
         estpmod = selpmod(jsonparams, y,u)
 
-def test_gcomb():
+def gcomb_testing():
     a1 = np.array([[7],[9]])
     a2 = np.array([[1, 2, 3],[4,5,6]])
     a3 = TS.TSAnalysis.gcombvec.func_gcombvec(a1,a2)
@@ -597,20 +598,23 @@ def test_gcomb():
 
 if __name__ == '__main__':
 
-    #test_jacobian()
-    #test_pmodsim()
-    #test_estimate()
-    #test_pmodmse()
-    #test_bjtf()
-    #test_pmodsim_parameters()
-    #test_regr()
-    #test_regrall()
-    #test_arx()
-    #test_armaSimple()
-    #test_arma()
-    #test_armax()
-    #test_aicbic()
-    #test_prepost()
-    #test_selmodarx()
-    test_selmod('regr')
-    #test_gcomb()
+    #jacobian_testing()
+    #pmodsim_testing()
+    #estimate_testing()
+    #pmodmse_testing()
+    #bjtf_testing()
+    #pmodsim_parameters_testing()
+    #regr_testing()
+    #regrall_testing()
+    #arx_testing()
+    #armaSimple_testing()
+    #arma_testing()
+    #armax_testing()
+    #aicbic_testing()
+    #prepost_testing()
+    #selmodarx_testing()
+    selmod_testing('arx')
+    #selmod_testing('arma')
+    #selmod_testing('armax')
+    #selmod_testing('bjtf')
+    #selmod_testing('regr')
