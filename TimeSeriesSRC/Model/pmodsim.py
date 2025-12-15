@@ -119,7 +119,7 @@ def func_pmodsim (pmod,e,u=[]):
 
 		# Add the differencing terms into H
 		for i in range(diff[0]):
-			dh = np.conv(dh, [1, -1])
+			dh = np.convolve(dh, [1, -1])
 
 		lp = len(period)
 
@@ -128,7 +128,7 @@ def func_pmodsim (pmod,e,u=[]):
 			# Fixed: Matlab code [1 zeros(1,per-1) -1] creates [1, 0, 0, ..., 0, -1]
 			ddh = np.concatenate([[1], np.zeros(per - 1), [-1]])
 			for j in range(diff[i + 1]):
-				dh = np.conv(dh, ddh)
+				dh = np.convolve(dh, ddh)
 
 		# Simulate the prediction model
 		y = lfilter(nh, dh, e)

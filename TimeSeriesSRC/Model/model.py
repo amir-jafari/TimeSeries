@@ -814,7 +814,7 @@ class pmodel:
         # Compute the prediction.
         yhat = lfilter((nh - dh), nh, y);
         for i in range(num_inputs):
-            yhat = yhat + lfilter(np.conv(dh, ng[i]), np.conv(nh, dg[i]), u[i,:])
+            yhat = yhat + lfilter(np.convolve(dh, ng[i]), np.convolve(nh, dg[i]), u[i,:])
 
         return yhat
 
@@ -881,9 +881,9 @@ class pmodel:
         else:
             ddh = diffop
             for i in range(1,self.diff[0]):
-                ddh = np.conv(ddh, diffop);
+                ddh = np.convolve(ddh, diffop);
 
-        dh = np.conv(dh, ddh)
+        dh = np.convolve(dh, ddh)
 
         lp = len(self.period)
         for i in range(lp):
@@ -892,13 +892,13 @@ class pmodel:
             nh1 = np.zeros(1, ctot)
             nh1[per:ctot] = self.c[i + 1]
             nh1 = np.add([1], nh1)
-            nh = np.conv(nh, nh1)
+            nh = np.convolve(nh, nh1)
             dtot = per * len(self.d[i + 1])
             dh1 = np.zeros(1, dtot)
             #dh1(per: per:dtot) = pmod.d{i + 1};
             dh1[per:dtot] = self.d[i+1]
             dh1 = np.add([1] ,dh1)
-            dh = np.conv(dh, dh1)
+            dh = np.convolve(dh, dh1)
 
             # Incorporate the differencing
             diffop = np.add([1], np.zeros(1, per))
@@ -909,10 +909,10 @@ class pmodel:
             else:
                 ddh = diffop
                 for i in range(1,self.diff(i + 1)):
-                    ddh = np.conv(ddh, diffop)
+                    ddh = np.convolve(ddh, diffop)
 
 
-            dh = np.conv(dh, ddh)
+            dh = np.convolve(dh, ddh)
 
         return ng, dg, nh, dh
 
@@ -940,10 +940,10 @@ class pmodel:
             ddh = diffop
 
         for i in range(1,self.diff[0]):
-            ddh = np.conv(ddh, diffop)
+            ddh = np.convolve(ddh, diffop)
 
 
-        dh = np.conv(dh, ddh)
+        dh = np.convolve(dh, ddh)
 
         lp = len(self.period)
         for i in range(lp):
@@ -952,12 +952,12 @@ class pmodel:
             nh1 = np.zeros(1, ctot);
             nh1[per:, per:ctot] = self.c[i + 1]
             nh1 = np.add([1] ,nh1)
-            nh = np.conv(nh, nh1)
+            nh = np.convolve(nh, nh1)
             dtot = per * len(self.d[i + 1])
             dh1 = np.zeros(1, dtot);
             dh1[per:, per:dtot] = self.d[i + 1]
             dh1 = np.add([1], dh1)
-            dh = np.conv(dh, dh1)
+            dh = np.convolve(dh, dh1)
             # Incorporate the differencing
             diffop = np.add([1], np.zeros(1, per))
             diffop[-1] = -1;
@@ -967,9 +967,9 @@ class pmodel:
                 ddh = diffop
 
                 for i in range(1,self.diff[i + 1]):
-                    ddh = np.conv(ddh, diffop)
+                    ddh = np.convolve(ddh, diffop)
 
-            dh = np.conv(dh, ddh);
+            dh = np.convolve(dh, ddh);
 
         return ng, dg, nh, dh
 
