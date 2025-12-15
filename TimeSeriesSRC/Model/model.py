@@ -201,7 +201,8 @@ class pmodel:
     ##--------------------------------------------------
     def newarx(self):
 
-        if any(self.na) < 0:
+        # Fixed: na is a scalar, not an array
+        if self.na < 0:
             xerror='na must be positive integers.'
             raise Exception (xerror)
 
@@ -213,11 +214,14 @@ class pmodel:
 
             self.nb  = list(self.nb[0])
 
-        if any(self.nb) < 0:
-            xerror='All nb(i) must be positive integers.'
-            raise Exception(xerror)
+        # Fixed: Check each element of nb array
+        for i in range(len(self.nb)):
+            if self.nb[i] < 0:
+                xerror='All nb(i) must be positive integers.'
+                raise Exception(xerror)
 
-        self.a = [(np.zeros(len(self.na)))]
+        # Fixed: na is scalar, create array of size na
+        self.a = [np.zeros(self.na)]
 
 
         nnb = len(self.nb)
@@ -237,24 +241,28 @@ class pmodel:
 
     #-----------------------------------------------------------
     def newarmax(self):
-        if any(self.na) < 0:
+        # Fixed: na is a scalar, not an array
+        if self.na < 0:
             xerror='na must be positive integers.'
             raise Exception(xerror)
 
-        if any(self.nb) < 0:
-            xerror='All nb(i) must be positive integers.'
-            raise Exception(xerror)
+        # Fixed: Check each element of nb array
+        for i in range(len(self.nb)):
+            if self.nb[i] < 0:
+                xerror='All nb(i) must be positive integers.'
+                raise Exception(xerror)
 
-        if any(self.nc) < 0:
+        # Fixed: nc is a scalar, not an array
+        if self.nc < 0:
             xerror='nc must be positive integers.'
             raise Exception(xerror)
 
-        self.a.append(np.zeros(( self.na)))
+        self.a.append(np.zeros(self.na))
         nnb = len(self.nb)
         for i in range(nnb):
-            self.b.append(np.zeros((self.nb[i] + 1)))
+            self.b.append(np.zeros(self.nb[i] + 1))
 
-        self.c.append(np.zeros((self.nc)))
+        self.c.append(np.zeros(self.nc))
         self.d = np.array([[]])
         self.f = np.array([[]])
         if len(self.delay) != nnb:
@@ -994,8 +1002,8 @@ class pmodel:
         ng = []
         dg = []
         for i in range(num_inputs):
-            #ng[i] = np.append ( np.zeros(int(self.delay[i]))  , np.array([self.b[i]])   )
-            x1 =  np.append (np.zeros(int(self.delay[i]))  , np.array([self.b[i]])   )
+            # Fixed: Remove extra array wrapping of self.b[i]
+            x1 = np.append(np.zeros(int(self.delay[i])), self.b[i])
             ng.append(x1)
 
             if len(self.f[i])==0:
@@ -1003,8 +1011,8 @@ class pmodel:
                 dg.append(x2)
 
             else:
-                #dg[i] = np.append([1] ,self.f[i])
-                x2 = np.append([1] ,[self.f[i]])
+                # Fixed: Remove extra array wrapping of self.f[i]
+                x2 = np.append([1], self.f[i])
                 dg.append(x2)
 
         if len(self.c)==0:
@@ -1047,18 +1055,21 @@ class pmodel:
         dg = []
         ng = []
         for i in range(num_inputs):
-            ng.append(np.append(np.zeros((self.delay[i])), self.b[i]))
+            # Fixed: Remove extra parentheses in zeros
+            ng.append(np.append(np.zeros(self.delay[i]), self.b[i]))
             if len(self.a)==0:
                 dg.append(np.array([1]))
             else:
-                dg.append(np.append([1], self.a))
+                # Fixed: Access self.a[0] since a is a list of arrays
+                dg.append(np.append([1], self.a[0]))
 
         nh = [1]
 
         if  len(self.a)==0:
             dh = np.array([1])
         else:
-            dh = np.append([1], self.a)
+            # Fixed: Access self.a[0] since a is a list of arrays
+            dh = np.append([1], self.a[0])
 
         return ng, dg, nh, dh
 
@@ -1068,19 +1079,15 @@ class pmodel:
 
         num_inputs = len(self.b)
 
-        #dg = np.zeros(num_inputs)
-        #ng = np.zeros(num_inputs)
         ng = []
         dg = []
         for i in range(num_inputs):
-            #ng[i] = np.append(np.zeros((1, self.delay[i])), self.b[i])
-            x1 = np.append(np.zeros((1, self.delay[i])), [self.b[i]])
+            # Fixed: Remove extra parentheses and array wrapping
+            x1 = np.append(np.zeros(self.delay[i]), self.b[i])
             ng.append(x1)
             if len(self.a)==0:
-                #dg[i] = np.array([1])
                 dg.append([1])
             else:
-                #dg[i] = np.append([1], self.a[0])
                 x2 = np.append([1], self.a[0])
                 dg.append(x2)
         if len(self.c)==0:
@@ -1105,7 +1112,8 @@ class pmodel:
         dg = []
 
         if len(self.c)==0:
-            nh = np.array[1]
+            # Fixed: np.array([1]) not np.array[1]
+            nh = np.array([1])
         else:
             nh = np.append([1], self.c[0])
 

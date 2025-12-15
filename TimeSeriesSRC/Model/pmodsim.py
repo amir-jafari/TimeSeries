@@ -125,7 +125,8 @@ def func_pmodsim (pmod,e,u=[]):
 
 		for i in range(lp):
 			per = period[i]
-			ddh = np.add([1], np.zeros((1, per - 1)) - 1)
+			# Fixed: Matlab code [1 zeros(1,per-1) -1] creates [1, 0, 0, ..., 0, -1]
+			ddh = np.concatenate([[1], np.zeros(per - 1), [-1]])
 			for j in range(diff[i + 1]):
 				dh = np.conv(dh, ddh)
 

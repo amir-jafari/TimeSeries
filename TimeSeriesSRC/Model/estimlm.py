@@ -167,7 +167,7 @@ def func_estimlm (pmod,y=[],u=[]) :
 			stop = 'Maximum MU reached, performance goal was not met.'
 
 		# Progress
-		if ((epoch % show) == 0) | (len(stop) > 0):
+		if (show > 0 and (epoch % show) == 0) | (len(stop) > 0):
 
 			if epochs>0:
 				message ='Epoch {}/{}'.format(epoch, epochs)

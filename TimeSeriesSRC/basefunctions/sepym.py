@@ -50,12 +50,15 @@ def func_sepym (y):
 			error='y is not a field of input y'
 			raise Exception(error)
 
-		if len(y[0])!=len(m[0]):
+		# Handle both 1D and 2D arrays
+		y_len = len(y) if y.ndim == 1 else len(y[0])
+		m_len = m.shape[1] if len(m.shape) > 1 else len(m)
+		if y_len != m_len:
 			error='y and m should have the same length'
 			raise Exception(error)
 
 	else:
-		m = np.ones((1, len(y[0])))
+		m = np.ones((1, len(y)))
 		ystru = {
 			'y':y,
 			'm':m

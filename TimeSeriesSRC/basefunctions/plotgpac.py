@@ -83,7 +83,19 @@ def func_plotgpac (gpac,gtitle="Gpac Array",  ax=None) :
 	S, R = gpac.shape
 
 	display=False
-	with plt.style.context('seaborn'):
+
+	# Try to use seaborn style if available, otherwise use default
+	try:
+		style_context = plt.style.context('seaborn-v0_8-darkgrid')
+	except:
+		try:
+			style_context = plt.style.context('seaborn')
+		except:
+			# If seaborn styles not available, use a null context
+			import contextlib
+			style_context = contextlib.nullcontext()
+
+	with style_context:
 		if ax == None:
 			fig, ax = plt.subplots()
 			display = True

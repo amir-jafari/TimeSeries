@@ -1,0 +1,71 @@
+function [ng,dg,nh,dh] = getGHarma(pmod)
+%GETGH Find the G and H transfer functions for the prediction model.
+%
+%	Syntax
+%
+%	  [NG,DG,NH,DH] = GETGHARMA(PMOD)
+%
+%	Description
+%
+%	  GETGHARMA gets the G and H transfer functions for the ARMA
+%	  prediction model PMOD.
+%
+%	  GETGHARMA(PMOD) takes,
+%	    PMOD - Prediction model.
+%	  and returns,
+%	    NG - Numerator of G transfer function (null).
+%	    DG - Denominator of G transfer function (null).
+%	    NH - Numerator of H transfer function.
+%	    DH - Denominator of H transfer function.
+%
+%	Examples
+%
+%	  Here NEWARMA is used to create an ARMA
+%	  model with first order polynomials.
+%
+%	    pmod = newarma(1,1);
+%
+%	  The parameters of the model are all set to random values. 
+%	  The G and H transfer functions can be extracted:
+%
+%	    [ng,dg,nh,dh] = getGHarma(pmod);
+%	    
+%	Algorithm
+%
+%	  GETGHARMA rearranges the system model into the form
+%
+%	    y(t) = H e(t)
+%
+%	See also GETGH, GETGHARX, GETGHARMAX, GETGHBJTF.
+
+% Yong Hu, Martin Hagan, 9-15-00
+% $Revision: 1.0 $ $Date: 21-Sep-2000 14:37:36 $
+
+ng = {};
+dg = {};
+
+if isempty(pmod.c)
+   nh = 1;
+else
+   nh = [1 pmod.c{1}];
+end
+if isempty(pmod.d)
+   dh = 1;
+else
+   dh = [1 pmod.d{1}];
+end
+
+lp = length(pmod.period);
+for i=1:lp,
+  per = pmod.period(i);
+  ctot = per*length(pmod.c{i+1});
+  nh1 = zeros(1,ctot);
+  nh1(per:per:ctot) = pmod.c{i+1};
+  nh1 = [1 nh1];
+  nh = conv(nh,nh1);
+  dtot = per*length(pmod.d{i+1});
+  dh1 = zeros(1,dtot);
+  dh1(per:per:dtot) = pmod.d{i+1};
+  dh1 = [1 dh1];
+  dh = conv(dh,dh1);
+end
