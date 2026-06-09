@@ -9,7 +9,7 @@ from ..basefunctions.sdiff import func_sdiff as sdiff
 
 
 
-def estimate(pmod, y, u=np.array([])):
+def estimate(pmod, y, u=np.array([]), show_plot=True, show_output=True):
 
     math_functions = dir(math)
 
@@ -68,16 +68,18 @@ def estimate(pmod, y, u=np.array([])):
                 yj = np.array(yj)
                 y[j] = yj
 
-    # Difference the sequences
-    period = [ x for x in pmod.period]
+    # Difference the sequences before estimation so the optimizer minimises MSE
+    # on the stationary (differenced) series.  predict() expects pre-differenced
+    # data; callers that need predictions on the original scale must difference
+    # their y (and u) before calling predict().
+    period = [x for x in pmod.period]
     period.insert(0, 1)
     diff = pmod.diff
     for i in range(len(diff)):
         d = diff[i]
-        if (d != 0):
+        if d != 0:
             if uflag:
                 u = sdiff(u, d, period[i])
-
             y = sdiff(y, d, period[i])
 
     # check to see if y, u are zero mean
@@ -94,10 +96,9 @@ def estimate(pmod, y, u=np.array([])):
 
     if uflag:
         if pmod.estimFcn == 'estimlm':
-            pmod, trec, stat = estimlm(pmod,ystru,u)
+            pmod, trec, stat = estimlm(pmod, ystru, u, show_plot=show_plot, show_output=show_output)
     else:
-
         if pmod.estimFcn == 'estimlm':
-            pmod, trec, stat = estimlm(pmod, ystru)
+            pmod, trec, stat = estimlm(pmod, ystru, show_plot=show_plot, show_output=show_output)
 
     return pmod, trec, stat

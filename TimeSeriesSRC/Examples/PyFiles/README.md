@@ -1,12 +1,14 @@
-# Example Notebooks
+# Example Scripts
 
-End-to-end walkthroughs of the four-step system identification process using the **TimeSeriesSRC** toolbox.  Each notebook applies a different model class to a classic Box-Jenkins benchmark dataset.
+Python script versions of the [example notebooks](../NoteBooks/).  Each script covers the same four-step system identification workflow as its notebook counterpart and produces identical results.
+
+Scripts use `# %%` cell markers, making them runnable as interactive notebooks in **VS Code** (Python Interactive window) and **Spyder**, or as plain scripts from the command line.
 
 ---
 
-## Notebooks
+## Scripts
 
-### [01 — ARMA Model](01_ARMA_Model.ipynb)
+### [01 — ARMA Model](01_ARMA_Model.py)
 
 **Dataset:** Box-Jenkins Series A — Chemical Concentration (197 observations)
 
@@ -23,7 +25,7 @@ Includes automated model selection with `selpmod` (AIC and BIC grid search over 
 
 ---
 
-### [02 — ARIMA Model](02_ARIMA_Model.ipynb)
+### [02 — ARIMA Model](02_ARIMA_Model.py)
 
 **Dataset:** Box-Jenkins Series C — Chemical Temperature (226 observations)
 
@@ -40,7 +42,7 @@ Includes `selpmod` grid search over ARIMA structures with fixed d=1.
 
 ---
 
-### [03 — Seasonal ARIMA Model](03_Seasonal_ARIMA_Model.ipynb)
+### [03 — Seasonal ARIMA Model](03_Seasonal_ARIMA_Model.py)
 
 **Dataset:** Box-Jenkins Series G — Airline Passengers (144 observations, monthly, period s=12)
 
@@ -57,7 +59,7 @@ Includes `selpmod` grid search over seasonal ARIMA structures.
 
 ---
 
-### [04 — BJTF / ARMAX / ARX Model](04_BJTF_Model.ipynb)
+### [04 — BJTF / ARMAX / ARX Model](04_BJTF_Model.py)
 
 **Dataset:** Box-Jenkins Series J — Gas Furnace (296 observations, input u = gas flow rate, output y = CO₂ concentration)
 
@@ -74,18 +76,36 @@ Also fits ARMAX and ARX structures on the same data for comparison.  Includes `s
 
 ---
 
-## The Four-Step Process
+## Running the Scripts
 
-All notebooks follow the same framework:
+### Command line
 
-1. **Choose a model class** — guided by whether an external input is available and whether the series is stationary.
-2. **Select model order** — read candidate orders from the ACF, PACF, and GPAC produced by `uniAnal` or `multiAnal`.  Confirm with `selpmod`.
-3. **Estimate parameters** — `estimate` minimises one-step prediction errors via Levenberg-Marquardt.  `pmoddisp` shows parameter confidence intervals; `pmodpzplot` shows the pole-zero map.
-4. **Validate** — residuals should be white noise.  Check with `uniChi` / `multiChi` (chi-square test) and `uniAnal` on residuals.
+```bash
+python 01_ARMA_Model.py
+```
+
+### VS Code Interactive
+
+Open the file and click **Run Cell** above any `# %%` marker, or use **Run Current File in Interactive Window** to execute all cells in sequence.
+
+### Spyder
+
+Open the file and press **F5** to run the whole script, or **Shift+Enter** to run the current cell.
+
+---
+
+## Path Resolution
+
+Each script locates the package root relative to its own file, so it can be run from any working directory:
+
+```python
+_script_dir = os.path.dirname(os.path.abspath(__file__))
+timeseries_root = os.path.abspath(os.path.join(_script_dir, '..', '..', '..'))
+```
 
 ---
 
 ## Related
 
-- **Python scripts:** [`../PyFiles/`](../PyFiles/) — `.py` versions of these notebooks (VS Code Interactive / Spyder compatible).
+- **Jupyter notebooks:** [`../NoteBooks/`](../NoteBooks/) — equivalent notebooks with rendered output.
 - **User Guide:** [`../../../../docs/UserGuide.md`](../../../../docs/UserGuide.md) — complete function reference.

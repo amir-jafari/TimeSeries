@@ -112,7 +112,10 @@ def func_selpmod (filename,y,u=[]):
 		xerror = 'First parameter should be a valid path to a JSON file or a valid path '
 		raise Exception(xerror)
 
-	result = np.array([])
+	result = {}
+
+	if hasattr(u, 'ndim') and u.ndim == 1:
+		u = np.reshape(u, (1, -1))
 
 	for rec in data['models']:
 		xtype =''
@@ -331,7 +334,6 @@ def func_selpmod (filename,y,u=[]):
 				pmodt = pmodel(xtype, na=na,nb=nb, nc=nc, delay=delay)
 
 			elif xtype == 'bjtf':
-				print(temp)
 				nb = temp[:lnb]
 				temp = temp[lnb:]
 				nc = temp[:lnc]
@@ -357,14 +359,19 @@ def func_selpmod (filename,y,u=[]):
 			pmodt.estimParams.goal = 0.01
 
 
-			if len(u)==0:
-				pmodt, trec, stat = estimate(pmodt,y)
-				aictmp = pmodaic(pmodt, y)
-				bictmp = pmodbic(pmodt, y)
-			else:
-				pmodt, trec, stat = estimate(pmodt,y, u)
-				aictmp = pmodaic(pmodt, y, u)
-				bictmp = pmodbic(pmodt, y, u)
+			try:
+				if len(u)==0:
+					pmodt, trec, stat = estimate(pmodt, y, show_plot=False, show_output=False)
+					aictmp = pmodaic(pmodt, y)
+					bictmp = pmodbic(pmodt, y)
+				else:
+					pmodt, trec, stat = estimate(pmodt, y, u, show_plot=False, show_output=False)
+					aictmp = pmodaic(pmodt, y, u)
+					bictmp = pmodbic(pmodt, y, u)
+			except Exception as ex:
+				print(f'  [skipped — {ex}]')
+				iter = iter + 1
+				continue
 
 			aic = [aic, aictmp]
 
@@ -385,12 +392,22 @@ def func_selpmod (filename,y,u=[]):
 			if iter == 1:
 				print('Selecting the best {0} prediction model'.format(xtype.upper()))
 
-			str = '{0}: Combination {1} out of {2} total.  aic = {3}, bic = {4}'.format(xtype, iter, TIter, aictmp, bictmp)
-			print(str)
+			_fmt = lambda a: int(np.asarray(a).ravel()[0]) if np.asarray(a).ravel().size == 1 else list(np.asarray(a).ravel().astype(int))
+			if xtype == 'arx':
+				_struct = 'na={}, nb={}, delay={}'.format(_fmt(na), _fmt(nb), _fmt(delay))
+			elif xtype == 'arma':
+				_struct = 'nc={}, nd={}'.format(_fmt(nc), _fmt(nd))
+			elif xtype == 'armax':
+				_struct = 'na={}, nb={}, nc={}, delay={}'.format(_fmt(na), _fmt(nb), _fmt(nc), _fmt(delay))
+			elif xtype == 'bjtf':
+				_struct = 'nb={}, nc={}, nd={}, nf={}, delay={}'.format(_fmt(nb), _fmt(nc), _fmt(nd), _fmt(nf), _fmt(delay))
+			elif xtype == 'regr':
+				_struct = 'nb={}, delay={}'.format(_fmt(nb), _fmt(delay))
+			else:
+				_struct = ''
+			print('{0}: Combination {1} out of {2} total  [{3}].  aic = {4:.4f}, bic = {5:.4f}'.format(
+				xtype, iter, TIter, _struct, aictmp, bictmp))
 
-
-		aic = aic.append(A)
-		bic = bic.append(A)
 
 		res = {
 			'model':xtype,
@@ -402,7 +419,7 @@ def func_selpmod (filename,y,u=[]):
 			'bicmod' : bicmod
 		}
 
-		estpmod = np.add(result, [res])
+		result[xtype] = res
 
-	return estpmod
+	return result
 

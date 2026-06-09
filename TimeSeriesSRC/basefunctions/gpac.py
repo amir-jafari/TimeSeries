@@ -1,3 +1,4 @@
+import warnings
 import numpy as np
 
 def func_gpac (acf,nrows,ncols) :
@@ -39,14 +40,25 @@ def func_gpac (acf,nrows,ncols) :
 
 	'''
 
-	gpac_array = np.zeros([nrows,ncols])
-
 	if len(acf.shape) == 1:
 		acf = acf.reshape(1,-1)
 	elif acf.shape[0] != 1:
 		acf = np.transpose(acf)
 
-	l = int(acf.shape[1] / 2) + 1;
+	l = int(acf.shape[1] / 2) + 1
+	L_half = acf.shape[1] // 2   # (acf.shape[1]-1)//2 for odd-length, same value
+
+	# gpac needs: (nrows-1) + (ncols-1) <= L_half - 1, i.e. nrows+ncols <= L_half+1
+	if nrows + ncols > L_half + 1:
+		ncols_safe = max(1, L_half + 1 - nrows)
+		warnings.warn(
+			f'gpac: ACF length {acf.shape[1]} (half-length {L_half}) is too short for '
+			f'nrows={nrows}, ncols={ncols} (need nrows+ncols <= {L_half+1}); '
+			f'ncols truncated to {ncols_safe}.',
+			stacklevel=2)
+		ncols = ncols_safe
+
+	gpac_array = np.zeros([nrows, ncols])
 
 	for j in range(nrows):
 		for m in range(ncols):

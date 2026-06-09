@@ -59,17 +59,14 @@ def func_pmodbic (pmod,y,u=[]) :
 
 	uflag = (len(u)>0)
 
-	# Difference the sequences
-
 	period = np.append([1], pmod.period)
 	diff = pmod.diff
 
 	for i in range(len(diff)):
 		d = diff[i]
-		if (d!=0):
+		if d != 0:
 			if uflag:
 				u = sdiff(u, d, period[i])
-
 			y = sdiff(y, d, period[i])
 
 	if uflag:
@@ -79,9 +76,9 @@ def func_pmodbic (pmod,y,u=[]) :
 
 	e = y - yhat;
 
-	N = e.shape[0] * e.shape[1]
+	N = e.size
 
-	mse = sum(sum(e ** 2)) / N
+	mse = np.sum(e ** 2) / N
 
 	X = pmod.getmX()
 	numparams = len(X);

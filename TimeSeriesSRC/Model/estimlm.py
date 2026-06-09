@@ -2,6 +2,7 @@ import numpy as np
 import copy
 import time
 from scipy.sparse import csr_matrix
+import matplotlib.pyplot as plt
 
 from ..basefunctions.sepym import func_sepym as sepym
 from ..basefunctions.calcindex import func_calcindex
@@ -14,8 +15,81 @@ from .pmodbic import func_pmodbic as pmodbic
 from .pmodmse import func_pmodmse as pmodmse
 from .pmodbic import func_pmodbic as pmodbic
 
-def func_estimlm (pmod,y=[],u=[]) :
-	'''
+# Global variable to track the figure for plotting
+_plotindex_fig = None
+_plotindex_line = None
+
+def plotindex(trec, goal, name, epoch):
+	"""
+	Plot prediction model performance index.
+
+	PLOTINDEX(TR,GOAL,NAME,EPOCH) takes these inputs,
+	  TR - Training record returned by train.
+	  GOAL - Performance goal.
+	  NAME - Training function name.
+	  EPOCH - Current epoch number.
+	and plots the training performance index and the performance goal.
+	"""
+	global _plotindex_fig, _plotindex_line
+
+	# Get indices up to current epoch
+	ind = slice(0, epoch + 1)
+	epochs_arr = np.arange(epoch + 1)
+	index_arr = trec['index'][ind]
+
+	# Check if goal should be plotted
+	print_goal = np.isfinite(goal)
+	plot_goal = np.isfinite(goal) and (goal > 0)
+
+	# Create or update figure
+	if _plotindex_fig is None or not plt.fignum_exists(_plotindex_fig.number):
+		plt.ion()  # Enable interactive mode
+		_plotindex_fig, ax = plt.subplots()
+		_plotindex_fig.canvas.manager.set_window_title(f'Training with {name}')
+		_plotindex_line, = ax.semilogy(epochs_arr, index_arr, linewidth=2)
+		if plot_goal:
+			ax.axhline(y=goal, color='r', linestyle='--', linewidth=1, label='Goal')
+		ax.set_ylabel('Performance Index')
+		ax.set_xlabel('0 Epochs')
+	else:
+		ax = _plotindex_fig.axes[0]
+		_plotindex_line.set_xdata(epochs_arr)
+		_plotindex_line.set_ydata(index_arr)
+		ax.relim()
+		ax.autoscale_view()
+
+	# Update title
+	title_str = f'Performance is {trec["index"][epoch]:.6g}'
+	if print_goal:
+		title_str += f', Goal is {goal:.6g}'
+	ax = _plotindex_fig.axes[0]
+	ax.set_title(title_str)
+
+	# Update x-label
+	if epoch == 0:
+		ax.set_xlabel('Zero Epochs')
+	elif epoch == 1:
+		ax.set_xlabel('One Epoch')
+	else:
+		ax.set_xlabel(f'{epoch} Epochs')
+
+	# Set x-axis limits
+	if epoch > 0:
+		ax.set_xlim([0, epoch])
+
+	# Update display
+	_plotindex_fig.canvas.draw()
+	_plotindex_fig.canvas.flush_events()
+	plt.pause(0.01)
+
+def reset_plotindex():
+	"""Reset the plot figure for a new training session."""
+	global _plotindex_fig, _plotindex_line
+	_plotindex_fig = None
+	_plotindex_line = None
+
+def func_estimlm (pmod,y=[],u=[],show_plot=True,show_output=True) :
+	r'''
 		ESTIMLM Levenberg-Marquardt algorithm for prediction model fitting.
 		
 			Syntax
@@ -118,6 +192,10 @@ def func_estimlm (pmod,y=[],u=[]) :
 	stop = ''
 	startTime = time.time()
 
+	# Reset plot for new training session
+	if show_plot:
+		reset_plotindex()
+
 	X = pmod.getmX()
 
 	numParameters = len(X)
@@ -161,7 +239,8 @@ def func_estimlm (pmod,y=[],u=[]) :
 		elif (currentTime > max_time):
 			stop = 'Maximum time elapsed, performance goal was not met.'
 		elif (normgX < min_grad):
-			print(normgX , min_grad )
+			if show_output:
+				print(normgX , min_grad )
 			stop = 'Minimum gradient reached, performance goal was not met.'
 		elif (mu > mu_max):
 			stop = 'Maximum MU reached, performance goal was not met.'
@@ -182,11 +261,13 @@ def func_estimlm (pmod,y=[],u=[]) :
 			if mu_max>0:
 				message = message + ' mu {}/{}'.format(mu, mu_max)
 
-			print(message)
+			if show_output:
+				print(message)
 
-			# plotindex(trec, goal, this, epoch)
+			if show_plot:
+				plotindex(trec, goal, this, epoch)
 
-			if len(stop)>0:
+			if show_output and len(stop)>0:
 				print('{}, {}\n\n'.format( this, stop))
 
 			# Stop when criteria indicate its time

@@ -67,12 +67,17 @@ def func_pmodmse (pmod,y,u=[]):
 	else:
 		yhat = pmod.predict(y)
 
-	e = y- yhat
+	e = y - yhat
 
 	m = makerow(m)
 
-	res =e *m* e
+	# Overflow is expected when LM tries unstable filter parameters; suppress it and
+	# cap at a large finite value so the optimizer can still rank trial steps correctly.
+	with np.errstate(over='ignore', invalid='ignore'):
+		res = e * m * e
 
-	mse = sum(sum(res)) / ( e.shape[0] * e.shape[1] )
+	mse = np.sum(res) / e.size
+	if not np.isfinite(mse):
+		mse = np.finfo(np.float64).max / 2
 
-	return mse,e
+	return mse, e

@@ -17,12 +17,8 @@ def func_newrec (epochs, *argv) :
 
 	names = argv
 
-	epoch = [i for i in range(epochs)]
-	blank = [0 for i in range(epochs)]
 	tr = {}
 	for i in range(len(names)):
-		tr[names[i]] = blank
-
-	#tr['epoch'] = epoch
+		tr[names[i]] = [0 for _ in range(epochs)]  # Create a NEW list for each field
 
 	return tr

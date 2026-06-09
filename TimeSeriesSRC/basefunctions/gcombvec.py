@@ -32,15 +32,7 @@ def func_gcombvec (a1, *argv) :
 
    #=============================================================
 	def nncpy(m,n):
-
-		mr, mc = m.shape
-		b = np.zeros((mr,mc*n))
-		ind = np.array([i for i in range(mc)])
-		for i in range(n):
-			ii = i * mc
-			b[:, ind + ii] = m
-
-		return b
+		return np.repeat(m, n, axis=1)
 
 	#==============================================================
 

@@ -5,6 +5,7 @@ from .xcorr import func_xcorr
 from .plotgpac import func_plotgpac
 from .parcor import func_parcor
 from .gpac import func_gpac
+from .makerow import func_makerow
 
 def func_uniAnal (y,na=20,nump=10,nrg=5,ncg=0,diff=[0],per=[],perdsp=1) :
 	'''
@@ -58,6 +59,8 @@ def func_uniAnal (y,na=20,nump=10,nrg=5,ncg=0,diff=[0],per=[],perdsp=1) :
 	'''
 
 
+	y = func_makerow(y)
+
 	if ncg == 0:
 		ncg = nrg
 
@@ -75,7 +78,7 @@ def func_uniAnal (y,na=20,nump=10,nrg=5,ncg=0,diff=[0],per=[],perdsp=1) :
 
 		d = diff[i]
 		if (d!=0):
-			y = func_sdiff(y, d, period(i));
+			y = func_sdiff(y, d, period[i]);
 
 	tot = max([nump + 1, nrg + ncg])
 
@@ -89,7 +92,7 @@ def func_uniAnal (y,na=20,nump=10,nrg=5,ncg=0,diff=[0],per=[],perdsp=1) :
 		raise Exception(error)
 
 
-	yacf = func_xcorr(y, y, L, 'unbiased');
+	yacf = func_xcorr(y, y, L, 'biased');
 
 	# Select data only at multiples of the display period
 

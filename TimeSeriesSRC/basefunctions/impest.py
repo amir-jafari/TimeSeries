@@ -45,8 +45,8 @@ def func_impest (u,y,k) :
 	u = makerow.func_makerow(u);
 	y = makerow.func_makerow(y);
 
-	ru = xcorr.func_xcorr(u, u, k, 'unbiased');
-	ruy = xcorr.func_xcorr(u, y, k, 'unbiased');
+	ru = xcorr.func_xcorr(u, u, k, 'biased');
+	ruy = xcorr.func_xcorr(u, y, k, 'biased');
 
 	# This was for the original version of xcorr
 	# ruy = xcorr(y, u, k, 'unbiased');

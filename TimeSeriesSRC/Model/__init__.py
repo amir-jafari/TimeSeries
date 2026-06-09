@@ -19,3 +19,4 @@ from . import pmodmse
 from . import pmodbic
 from . import selpmod
 from . import estimate
+from . import pmoddisp

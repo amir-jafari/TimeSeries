@@ -201,7 +201,7 @@ class pmodel:
     ##--------------------------------------------------
     def newarx(self):
 
-        # Fixed: na is a scalar, not an array
+        self.na = int(np.asarray(self.na).ravel()[0])
         if self.na < 0:
             xerror='na must be positive integers.'
             raise Exception (xerror)
@@ -241,7 +241,8 @@ class pmodel:
 
     #-----------------------------------------------------------
     def newarmax(self):
-        # Fixed: na is a scalar, not an array
+
+        self.na = int(np.asarray(self.na).ravel()[0])
         if self.na < 0:
             xerror='na must be positive integers.'
             raise Exception(xerror)
@@ -252,7 +253,7 @@ class pmodel:
                 xerror='All nb(i) must be positive integers.'
                 raise Exception(xerror)
 
-        # Fixed: nc is a scalar, not an array
+        self.nc = int(np.asarray(self.nc).ravel()[0])
         if self.nc < 0:
             xerror='nc must be positive integers.'
             raise Exception(xerror)
@@ -592,6 +593,7 @@ class pmodel:
             uflag = False
         else:
             uflag = True
+            u = makerow(np.asarray(u))
 
         predFcn = self.type
 
@@ -676,11 +678,14 @@ class pmodel:
             raise Exception (xerror)
 
         # Compute the prediction.
-        yhat = lfilter((nh - dh), nh, y);
+        # Suppress overflow/invalid warnings: LM trial steps can produce unstable filter
+        # configurations (poles outside the unit circle) that make lfilter diverge.
+        # pmodmse handles the resulting NaN/inf mse correctly.
+        with np.errstate(over='ignore', invalid='ignore'):
+            yhat = lfilter((nh - dh), nh, y)
 
-
-        for i in range(num_inputs):
-            yhat = yhat + lfilter(np.convolve(dh, ng[i], mode='full'), np.convolve(nh, dg[i],mode='full'), u[i,:])
+            for i in range(num_inputs):
+                yhat = yhat + lfilter(np.convolve(dh, ng[i], mode='full'), np.convolve(nh, dg[i], mode='full'), u[i, :])
 
         return yhat
 
@@ -1134,9 +1139,11 @@ class pmodel:
             nh1 = np.append([1] ,nh1)
             nh = np.convolve(nh, nh1)
             dtot = per * len(self.d[i + 1])
-            dh1 = np.zeros((dtot))
-            dh1[per:dtot] = self.d[i + 1]
+            dh1 = np.zeros(dtot)
+            d_i = self.d[i + 1]
+            for j in range(len(d_i)):
+                dh1[(j + 1) * per - 1] = d_i[j]
             dh1 = np.append([1], dh1)
-            dh = np.convolve(dh, dh1);
+            dh = np.convolve(dh, dh1)
 
         return ng, dg, nh, dh

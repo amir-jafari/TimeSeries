@@ -58,7 +58,7 @@ def func_sepym (y):
 			raise Exception(error)
 
 	else:
-		m = np.ones((1, len(y)))
+		m = np.ones((1, y.shape[-1]))
 		ystru = {
 			'y':y,
 			'm':m
