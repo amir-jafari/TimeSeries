@@ -9,7 +9,7 @@ A Python toolbox for time series analysis and prediction modeling, based on the 
 Building a prediction model is an iterative four-step process.
 
 <p align="center">
-  <img src="docs/SysId_Process.svg" alt="System Identification Process" width="220">
+  <img src="https://raw.githubusercontent.com/amir-jafari/TimeSeries/main/docs/SysId_Process.svg" alt="System Identification Process" width="220">
 </p>
 
 **1. Choose a model class.**  Select the family of models appropriate for your data and application — for example, ARMA for a univariate series with no external input, ARX or ARMAX when an input is available but the model structure should be simple, or BJTF when the input dynamics and noise model need to be identified independently.  The choice is guided by physical knowledge of the system and by preliminary data analysis.
