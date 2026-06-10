@@ -34,7 +34,8 @@ def func_chisqrdf (q,n) :
 	x = gamma(n/2)
 
 	y = (t**((n - 2) / 2)) * (np.exp((t * - 1)/2)) / ((2 ** (n / 2)) * gamma(n / 2))
-	pr = np.trapz(y,t)
+	_trapz = getattr(np, "trapezoid", np.trapz)
+	pr = _trapz(y, t)
 
 	#y = (t.^ ((n - 2) / 2)).* (exp(-t. / 2)) / ((2 ^ (n / 2)) * gamma(n / 2));
 
