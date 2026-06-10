@@ -31,37 +31,11 @@ jobs:
           name: python-package-distributions
           path: dist/
 
-  # ── Step 2: always publish to TestPyPI (pre-release AND real release) ──────
-  publish-to-testpypi:
-    name: Publish to TestPyPI
-    needs: build
-    runs-on: ubuntu-latest
-
-    environment:
-      name: testpypi
-      url: https://test.pypi.org/p/timeseries-toolbox
-
-    steps:
-      - name: Download distributions
-        uses: actions/download-artifact@v4
-        with:
-          name: python-package-distributions
-          path: dist/
-
-      - name: Upload to TestPyPI
-        run: |
-          pip install twine
-          python -m twine upload --repository-url https://upload.test.pypi.org/legacy/ dist/*
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
-
-  # ── Step 3: publish to PyPI only for real (non-pre-release) releases ───────
+  # ── Step 2: publish to PyPI for all releases ───────────────────────────────
   publish-to-pypi:
     name: Publish to PyPI
     needs: build
     runs-on: ubuntu-latest
-    if: github.event.release.prerelease == false
 
     environment:
       name: pypi
