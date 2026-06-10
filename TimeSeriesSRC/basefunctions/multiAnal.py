@@ -34,13 +34,15 @@ def func_multiAnal (u,y,nng=5,ndg=5,nnh=5,ndh=5,lg=12,lh=12) :
     lg : int, optional
         Number of impulse-response lags to compute. Default 12.
     lh : int, optional
-        Number of residual-ACF lags to compute. Default 12.
+        Accepted for API compatibility; not used in the current implementation.
+        The residual-ACF lag count is determined by ``nnh + ndh + 1``.
+        Default 12.
 
     Returns
     -------
     g : ndarray, shape (lg+1,)
         Estimated impulse response from ``u`` to ``y``.
-    rv : ndarray, shape (1, 2*lh+1)
+    rv : ndarray, shape (1, 2*(nnh+ndh+1)+1)
         Residual autocorrelation function.
     g_gpac : ndarray, shape (nng, ndg)
         GPAC table for the G transfer function.

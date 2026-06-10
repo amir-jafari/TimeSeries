@@ -225,15 +225,15 @@ The toolbox minimizes the sum of squared one-step prediction errors $\sum_t [y(t
 
 ## Toolbox
 
-📖 **[User Guide](docs/UserGuide.md)** — complete function reference with calling formats and argument descriptions.
+📖 **[User Guide](https://amir-jafari.github.io/TimeSeries/UserGuide.html)** — complete function reference with calling formats and argument descriptions.
 
 ### Installation
 
 ```bash
-pip install TimeSeriesSRC
+pip install timeseries-toolbox
 ```
 
-**Requirements:** Python ≥ 3.7 · NumPy ≥ 1.19 · SciPy ≥ 1.5 · Matplotlib ≥ 3.3
+**Requirements:** Python ≥ 3.8 · NumPy ≥ 1.19 · SciPy ≥ 1.5 · Matplotlib ≥ 3.3
 
 ---
 

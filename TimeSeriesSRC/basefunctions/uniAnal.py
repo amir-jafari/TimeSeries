@@ -28,11 +28,11 @@ def func_uniAnal (y,na=20,nump=10,nrg=5,ncg=0,diff=[0],per=[],perdsp=1) :
         Number of GPAC columns (denominator orders); 0 sets it equal to
         ``nrg``. Default 0.
     diff : list of int, optional
-        Differencing orders ``[d0, d1, ...]``.  ``diff[i]`` is applied at
-        period ``per[i-1]`` (first element uses period 1). Default ``[0]``.
+        Differencing orders to apply before analysis.
+        Must satisfy ``len(diff) == len(per) + 1``. Default ``[0]``.
     per : list of int, optional
-        Seasonal periods ``[p1, p2, ...]``.  Must have one fewer element than
-        ``diff``. Default ``[]``.
+        Seasonal periods.  Used with ``diff`` — must have one fewer element.
+        Default ``[]``.
     perdsp : int, optional
         Display period — ACF and PACF are sampled at every ``perdsp``-th lag.
         Default 1.

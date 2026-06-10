@@ -62,6 +62,7 @@ docs = [
 [project.urls]
 Homepage      = "https://github.com/amir-jafari/TimeSeries"
 Documentation = "https://amir-jafari.github.io/TimeSeries"
+"User Guide"  = "https://amir-jafari.github.io/TimeSeries/UserGuide.html"
 Repository    = "https://github.com/amir-jafari/TimeSeries"
 "Bug Tracker" = "https://github.com/amir-jafari/TimeSeries/issues"
 Changelog     = "https://github.com/amir-jafari/TimeSeries/releases"
