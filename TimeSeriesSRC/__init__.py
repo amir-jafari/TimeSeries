@@ -31,7 +31,7 @@ Ljung, L. (1987).
 
 __author__  = "Amir Jafari, Martin Hagan, Lilian S. De Rivera"
 __email__   = "ajafari@gwu.edu"
-__version__ = "0.1.4"
+__version__ = "0.1.5"
 __license__ = "MIT"
 
 # ── Model classes and estimation ─────────────────────────────────────────────
