@@ -20,15 +20,19 @@ _plotindex_fig = None
 _plotindex_line = None
 
 def plotindex(trec, goal, name, epoch):
-	"""
-	Plot prediction model performance index.
+	"""Update the live training performance plot.
 
-	PLOTINDEX(TR,GOAL,NAME,EPOCH) takes these inputs,
-	  TR - Training record returned by train.
-	  GOAL - Performance goal.
-	  NAME - Training function name.
-	  EPOCH - Current epoch number.
-	and plots the training performance index and the performance goal.
+    Parameters
+    ----------
+    trec : dict
+        Training record (``trec['index']`` holds the per-epoch MSE values).
+    goal : float
+        Target performance value.  A horizontal dashed line is drawn if
+        finite and positive.
+    name : str
+        Algorithm name shown in the figure title.
+    epoch : int
+        Current epoch index (0-based); only data up to this epoch is plotted.
 	"""
 	global _plotindex_fig, _plotindex_line
 
@@ -89,81 +93,73 @@ def reset_plotindex():
 	_plotindex_line = None
 
 def func_estimlm (pmod,y=[],u=[],show_plot=True,show_output=True) :
-	r'''
-		ESTIMLM Levenberg-Marquardt algorithm for prediction model fitting.
-		
-			Syntax
-			
-			  [pmod,trec,stat]=estimlm(pmod,y,u)
-		
-			Description
-		
-			  ESTIMLM is an algorithm for estimating the parameters of a prediction
-			  model by fitting a data set according to Levenberg-Marquardt optimization.
-		
-			  ESTIMLM(PMOD,Y,U) takes these inputs,
-			    PMOD - Prediction model.
-			    Y    - Prediction model desired outputs.  Y may or may not be a
-			           structure.  If Y is a structure, then Y.Y is the prediction 
-			           model desired outputs, and Y.M is the vector
-			           containing the weighting factors for each error.  
-			    U    - Prediction model inputs.
-			  and returns,
-			    PMOD - New prediction model.
-			    TREC - Training record (index).
-			            TREC.index - Training performance index.
-			            TREC.mu    - Adaptive mu value.
-			    STAT - Statistics for final model.
-		               STAT.sigma - Residual variance.
-		               STAT.stdx - Vector of standard deviations of parameter estimates.
-		
-			  Training occurs according to the ESTIMLM's estimation parameters
-			  shown here with their default values:
-			    pmod.estimParam.epochs      10  Maximum number of epochs 
-			    pmod.estimParam.goal         0  Performance index goal
-			    pmod.estimParam.max_fail     5  Maximum validation failures
-			    pmod.estimParam.mem_reduc    1  Factor to use for memory/speed trade off.
-			    pmod.estimParam.mu       0.001  Initial mu value
-			    pmod.estimParam.mu_dec     0.1  mu decrement value
-			    pmod.estimParam.mu_inc      10  mu increment value
-			    pmod.estimParam.mu_max    1e10  Maximum mu value
-			    pmod.estimParam.min_grad  1e-4  Minimum performance gradient
-			    pmod.estimParam.show        25  Epochs between displays (NaN for no displays)
-			    pmod.estimParam.time       inf  Maximum time to train in seconds
-			    pmod.estimParam.delta     1e-7  Increment to use in computing Jacobian
-		
-			Algorithm
-		
-			  The Jacobian jX of error with respect to the model parameters X
-			  Is computed numerically.  Each parameter is adjusted according to 
-			  the Levenberg-Marquardt algorithm,
-		
-			    jj = jX * jX
-			    je = jX * E
-			    dX = -(jj+I*mu) \ je
-		
-			  where E is all errors and I is the identity matrix.
-		
-			  The adaptive value MU is increased by MU_INC until the change above
-			  results in a reduced performance value.  The change is then made to
-			  the network and mu is decreased by MU_DEC.
-		
-		
-			  Estimation stops when any of these conditions occurs:
-			  1) The maximum number of EPOCHS (repetitions) is reached.
-			  2) The maximum amount of TIME has been exceeded.
-			  3) Performance has been minimized to the GOAL.
-			  4) The performance gradient falls below MINGRAD.
-			  5) MU exceeds MU_MAX.
-		
+	"""Fit a prediction model with the Levenberg-Marquardt algorithm.
 
-		 Yong Hu, Martin Hagan, 9-15-00
-		 $Revision: 1.0 $ $Date: 21-Sep-2000 14:37:36 $
+    Minimises the sum of squared one-step-ahead prediction errors using an
+    iterative Levenberg-Marquardt update:
 
-		 FUNCTION INFO
-		 =============
+    .. math::
 
-	'''
+        \\Delta X = -(J^T J + \\mu I)^{-1} J^T E
+
+    where :math:`J` is the numerical Jacobian of the prediction errors with
+    respect to the model parameters :math:`X`, :math:`E` is the error vector,
+    and :math:`\\mu` is the adaptive damping factor.
+
+    Parameters
+    ----------
+    pmod : pmodel
+        Prediction model with initial parameter values and estimation
+        hyper-parameters in ``pmod.estimParams``.
+    y : array-like or dict
+        Desired output sequence.  If a dict, must have keys ``'y'``
+        (output array) and ``'m'`` (sample-weight vector).
+    u : array-like, optional
+        Input sequence.  Default ``[]`` (univariate models).
+    show_plot : bool, optional
+        Display the live performance-index plot during training.
+        Default ``True``.
+    show_output : bool, optional
+        Print epoch-by-epoch progress to stdout.  Default ``True``.
+
+    Returns
+    -------
+    pmod : pmodel
+        Fitted model with updated parameter values.
+    trec : dict
+        Training record with keys:
+
+        - ``'index'`` — performance index at each epoch.
+        - ``'mu'``    — damping factor :math:`\\mu` at each epoch.
+    stat : dict
+        Final statistics:
+
+        - ``'sigma'`` — residual variance :math:`\\hat{\\sigma}^2`.
+        - ``'stdx'``  — standard deviations of parameter estimates.
+
+    Notes
+    -----
+    Default estimation hyper-parameters (set on ``pmod.estimParams``):
+
+    ============  =======  ================================================
+    Attribute     Default  Meaning
+    ============  =======  ================================================
+    epochs        10       Maximum iterations
+    goal          0        Stop when performance ≤ goal
+    mu            0.001    Initial damping factor
+    mu_dec        0.1      Multiply mu by this on a successful step
+    mu_inc        10       Multiply mu by this on a failed step
+    mu_max        1e10     Stop if mu exceeds this value
+    min_grad      1e-4     Stop if gradient norm falls below this
+    max_time      inf      Wall-clock time limit (seconds)
+    delta         1e-7     Finite-difference step for Jacobian
+    ============  =======  ================================================
+
+    See Also
+    --------
+    estimate  : Public interface — calls this function internally.
+    func_jacobian : Numerical Jacobian calculation.
+	"""
 
 
 	ystru, y, m = sepym(y)

@@ -1,0 +1,12 @@
+/* Custom overrides for TimeSeries Toolbox docs */
+
+/* Widen the content area slightly */
+.md-content {
+    max-width: 900px;
+}
+
+/* Style GPAC / ACF table cells */
+table.gpac td {
+    font-family: monospace;
+    text-align: center;
+}

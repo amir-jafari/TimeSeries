@@ -3,44 +3,43 @@ from . import xcorr
 import numpy as np
 
 def func_impest (u,y,k) :
-	'''
-		IMPEST Estimate the impulse response.
-			
-			Syntax
-		
-			  [g]=impest(u,y,k)
-		
-			Description
-			
-			  IMPEST estimates the impulse response between the
-			  sequence u and the sequence y.
-			
-			  IMPEST(U,Y,K) takes these inputs,
-			    U - Input sequence.
-			    Y - Output sequence.
-			    K - Number of lags of the impulse response to compute.
-			  and returns,
-			    G - Estimate of the impulse response function.
-				
-			Examples
-		
-			  This code generates a random sequence.
-			
-			    e = randn(1,2000)*0.2;
-			    u = randn(1,2000);
-			    y = filter(1,[1 .5],u) + filter(1,[1 -.8],e);
-		
-			  The following commands estimate the impulse response between 
-			  u and y.  The impulse response will be computed for 10 lags.
-		
-			    g = impest(u,y,10)
-		
+	"""Estimate the impulse response between two sequences (Wiener-Hopf method).
 
-		 Yong Hu, Martin Hagan, 9-15-00
-		 $Revision: 1.0 $ $Date: 21-Sep-2000 14:37:36 $
+    Solves the Wiener-Hopf equations :math:`R_{uu}\\, g = R_{uy}` for the
+    finite impulse response ``g`` of length ``k+1``.
 
-		 Make sure that u and y are rows
-	'''
+    Parameters
+    ----------
+    u : array-like, shape (1, N)
+        Input (exogenous) sequence.
+    y : array-like, shape (1, N)
+        Output sequence (same length as ``u``).
+    k : int
+        Number of lags of the impulse response to compute; the result covers
+        lags 0 through ``k``.
+
+    Returns
+    -------
+    g : ndarray, shape (k+1,)
+        Estimated impulse response coefficients g[0], g[1], ..., g[k].
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scipy.signal import lfilter
+    >>> from TimeSeriesSRC.basefunctions.impest import func_impest
+    >>> rng = np.random.default_rng(0)
+    >>> u = rng.standard_normal((1, 300))
+    >>> e = rng.standard_normal((1, 300)) * 0.1
+    >>> y = lfilter([1], [1, 0.5], u[0]).reshape(1, -1) + e
+    >>> g = func_impest(u, y, k=10)
+    >>> g.shape
+    (11,)
+
+    See Also
+    --------
+    multiAnal : Higher-level multivariate analysis that calls this function.
+	"""
 
 	u = makerow.func_makerow(u);
 	y = makerow.func_makerow(y);

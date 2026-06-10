@@ -9,56 +9,61 @@ from .xcorr import func_xcorr
 from .makerow import func_makerow
 
 def func_multiAnal (u,y,nng=5,ndg=5,nnh=5,ndh=5,lg=12,lh=12) :
-	'''
-		MULTIANAL Multi-variable analysis.
-			
-			Syntax
-		
-			  [g,rv,g_gpac,h_gpac] = multiAnal(u,y,nng,ndg,nnh,ndh,lg,lh)
-		
-			Description
-			
-			  MULTIANAL provides an analysis between two sequences: u and y.
-			  It estimates the impulse response beteen the two variables, the
-			  residual autocorrelation function, the GPAC for the G transfer
-			  function between u and y, and the GPAC for the H transfer function
-			  between e and y (ARMA model). 
-			
-			  MULTIANAL(U,Y,NNG,NDG,NNH,NDH,LG,LH) takes these inputs,
-			    U   - Input sequence.
-			    Y   - Output sequence.
-			    NNG - Maximum order for G transfer function numerator; default = 5.
-			    NDG - Maximum order for G transfer function denominator; default = 5.
-			    NNH - Maximum order for H transfer function numerator; default = 5.
-			    NDH - Maximum order for H transfer function denominator; default = 5.
-			    LG  - Number of lags of the impulse response to compute; default = 10.
-			    LH  - Number of lags of the residual acf to compute; default = 10.
-			  and returns,
-			    G      - Estimated impulse response between u and y.
-			    RV     - Residual autocorrelation function.
-			    G_GPAC - GPAC for the G transfer function.
-			    H_GPAC - GPAC for the H transfer function.
-				
-			Examples
-		
-			  This code generates a first order sequence y from an
-			  input sequence u and a noise sequence e.
-			
-			    e = randn(1,2000)*0.2;
-			    u = randn(1,2000);
-			    y = filter(1,[1 .5],u) + filter(1,[1 -.8],e);
-		
-			  The following command generates the multivariate analysis 
-			  for the u and y sequences.  It uses the default orders of 5.
-		      
-			    [g,rv,g_gpac,h_gpac] = multiAnal(u,y);
-		
+	"""Multivariate analysis: impulse response, residual ACF, and GPAC tables.
 
-		 Yong Hu, Martin Hagan, 9-15-00
-		 $Revision: 1.0 $ $Date: 21-Sep-2000 14:37:36 $
+    Pre-whitens the input ``u`` with a BIC-selected ARMA model, estimates the
+    impulse response between ``u`` and ``y`` via the Wiener-Hopf equations,
+    and computes GPAC tables for both the G (transfer function) and H (noise)
+    components.  Produces plots of the impulse response, residual ACF, and the
+    two GPAC arrays.
 
+    Parameters
+    ----------
+    u : array-like
+        1-D input (exogenous) sequence.
+    y : array-like
+        1-D output sequence (same length as ``u``).
+    nng : int, optional
+        Maximum numerator order for the G GPAC table. Default 5.
+    ndg : int, optional
+        Maximum denominator order for the G GPAC table. Default 5.
+    nnh : int, optional
+        Maximum numerator order for the H GPAC table. Default 5.
+    ndh : int, optional
+        Maximum denominator order for the H GPAC table. Default 5.
+    lg : int, optional
+        Number of impulse-response lags to compute. Default 12.
+    lh : int, optional
+        Number of residual-ACF lags to compute. Default 12.
 
-	'''
+    Returns
+    -------
+    g : ndarray, shape (lg+1,)
+        Estimated impulse response from ``u`` to ``y``.
+    rv : ndarray, shape (1, 2*lh+1)
+        Residual autocorrelation function.
+    g_gpac : ndarray, shape (nng, ndg)
+        GPAC table for the G transfer function.
+    h_gpac : ndarray, shape (nnh, ndh)
+        GPAC table for the H noise model.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scipy.signal import lfilter
+    >>> from TimeSeriesSRC.basefunctions.multiAnal import func_multiAnal
+    >>> rng = np.random.default_rng(0)
+    >>> u = rng.standard_normal(300)
+    >>> e = rng.standard_normal(300) * 0.2
+    >>> y = lfilter([1], [1, 0.5], u) + lfilter([1], [1, -0.8], e)
+    >>> g, rv, g_gpac, h_gpac = func_multiAnal(u, y, lg=10)
+
+    See Also
+    --------
+    uniAnal : Univariate ACF/PACF/GPAC analysis.
+    multiChi : Chi-square test for residual/input independence.
+    impest : Lower-level impulse-response estimator.
+	"""
 
 	u = func_makerow(u)
 	y = func_makerow(y)

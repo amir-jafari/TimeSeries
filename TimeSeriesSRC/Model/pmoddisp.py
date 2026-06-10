@@ -3,40 +3,46 @@ import matplotlib.pyplot as plt
 
 
 def func_pmoddisp(pmod, stat):
-    '''
-        PMODDISP  Display parameter estimates and confidence intervals.
+    """Print a parameter table and produce an error-bar plot.
 
-            Syntax
+    Displays each estimated parameter with its ±2σ confidence interval in a
+    formatted table, then plots the same information as a horizontal error-bar
+    chart.
 
-              func_pmoddisp(pmod, stat)
+    Parameter ordering follows ``pmod.getmX()``:
 
-            Description
+    - ``bjtf``  — b, c, d, f  (one block per input / seasonal period)
+    - ``armax`` — a, b, c
+    - ``arx``   — a, b
+    - ``arma``  — c, d
+    - ``regr``  — b
 
-              Prints a table of parameter estimates with ±2 standard deviation
-              confidence intervals and produces a horizontal error-bar plot.
+    Parameters
+    ----------
+    pmod : pmodel
+        Estimated prediction model as returned by :func:`estimate`.
+    stat : dict
+        Statistics dictionary returned by :func:`estimate`:
 
-              The parameter ordering matches pmod.getmX():
-                bjtf  — b, c, d, f  (one block per input / seasonal period)
-                armax — a, b, c
-                arx   — a, b
-                arma  — c, d
-                regr  — b
+        - ``stat['sigma']`` — residual variance :math:`\\hat{\\sigma}^2`.
+        - ``stat['stdx']``  — standard deviation of each parameter (same
+          order as ``pmod.getmX()``).
 
-              FUNC_PMODDISP(PMOD, STAT) takes,
-                PMOD - Estimated prediction model (pmodel).
-                STAT - Statistics dict returned by estimate():
-                         stat['sigma'] - Residual variance.
-                         stat['stdx']  - Std dev of each parameter (same
-                                         order as pmod.getmX()).
+    Examples
+    --------
+    >>> import pathlib, pandas as pd
+    >>> import TimeSeriesSRC as ts
+    >>> data_dir = pathlib.Path(ts.__file__).parent / 'TestData'
+    >>> y = pd.read_csv(data_dir / 'Series_A_Chemical_Concentration.csv').values.flatten()
+    >>> pm = ts.pmodel('arma', nc=[2], nd=[1], diff=[0], per=[])
+    >>> pm_est, trec, stat = ts.estimate(pm, y, show_plot=False, show_output=False)
+    >>> ts.pmoddisp(pm_est, stat)
 
-            Example
-
-              pmod_est, trec, stat = estimate(pmod, y, u)
-              func_pmoddisp(pmod_est, stat)
-
-        Yong Hu, Martin Hagan
-        Python port: 2026
-    '''
+    See Also
+    --------
+    func_pmodpzplot : Pole-zero map for stability/invertibility check.
+    estimate        : Returns the ``stat`` dict consumed here.
+    """
 
     X    = np.asarray(pmod.getmX()).ravel()
     stdx = np.asarray(stat['stdx']).ravel()
@@ -85,44 +91,45 @@ def func_pmoddisp(pmod, stat):
 
 
 def func_pmodpzplot(pmod):
-    '''
-        PMODPZPLOT  Pole-zero plot for the G and H transfer functions.
+    """Plot poles and zeros of the G and H transfer functions.
 
-            Syntax
+    Displays an annotated pole-zero map on the complex plane with the unit
+    circle as a stability/invertibility reference.
 
-              func_pmodpzplot(pmod)
+    Polynomial conventions (all in the forward-shift operator :math:`q`):
 
-            Description
+    - B polynomial — ``[b0, b1, ..., b_nb]`` (zeros of G)
+    - F polynomial — ``[1, f1, ..., f_nf]``, combined with A → poles of G
+    - A polynomial — ``[1, a1, ..., a_na]``
+    - C polynomial — ``[1, c1, ..., c_nc]`` (zeros of H, regular part)
+    - D polynomial — ``[1, d1, ..., d_nd]``, combined with A → poles of H
 
-              Plots the poles (×) and zeros (○) of the G and H transfer
-              functions on the complex plane, with the unit circle for
-              reference.
+    For seasonal models (``pmod.period`` non-empty) the H transfer function is
+    decomposed into one panel per seasonal component.  For ``arma`` models G is
+    omitted.  For ``regr`` (static) models the function prints a notice and
+    returns immediately.
 
-              Polynomial conventions (all in z, highest power first):
-                B polynomial  — [b0, b1, ..., b_nb]   (zeros of G)
-                F polynomial  — [1, f1, ..., f_nf]     ⎫ combined → poles of G
-                A polynomial  — [1, a1, ..., a_na]     ⎭
-                C polynomial  — [1, c1, ..., c_nc]     (zeros of H, regular)
-                D polynomial  — [1, d1, ..., d_nd]     ⎫ combined → poles of H (regular)
-                A polynomial  — (same as above)        ⎭
+    Parameters
+    ----------
+    pmod : pmodel
+        Estimated prediction model (result of :func:`estimate` or manually
+        constructed).
 
-              For seasonal models (pmod.period non-empty) the H transfer
-              function is decomposed into one panel per component:
-                — H regular:  C[0] / (D[0]·A)
-                — H seasonal: Cs(z^{-s}) / Ds(z^{-s}) for each period s,
-                              where e.g. Cs(z^{-s}) = 1 + c_{s,1}·z^{-s}
+    Examples
+    --------
+    >>> import pathlib, pandas as pd
+    >>> import TimeSeriesSRC as ts
+    >>> data_dir = pathlib.Path(ts.__file__).parent / 'TestData'
+    >>> y = pd.read_csv(data_dir / 'Series_A_Chemical_Concentration.csv').values.flatten()
+    >>> pm = ts.pmodel('arma', nc=[2], nd=[1], diff=[0], per=[])
+    >>> pm_est, trec, stat = ts.estimate(pm, y, show_plot=False, show_output=False)
+    >>> ts.pmodpzplot(pm_est)
 
-              For model types without an input (arma) G is not shown.
-              For regr (static model) no meaningful poles or zeros exist.
-
-            Example
-
-              pmod_est, trec, stat = estimate(pmod, y, u)
-              func_pmodpzplot(pmod_est)
-
-        Yong Hu, Martin Hagan
-        Python port: 2026
-    '''
+    See Also
+    --------
+    func_pmoddisp : Parameter table and error-bar plot.
+    estimate      : Fit model parameters from data.
+    """
 
     def _poly(lst, idx=0, prepend_one=True):
         '''Extract polynomial coefficients from a pmod attribute list.'''

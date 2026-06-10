@@ -8,55 +8,58 @@ from .gpac import func_gpac
 from .makerow import func_makerow
 
 def func_uniAnal (y,na=20,nump=10,nrg=5,ncg=0,diff=[0],per=[],perdsp=1) :
-	'''
-		UNIANAL Univariate analysis
-			
-			Syntax
-		
-			  [yacf,ypacf,ygpac] = uniAnal(y,na,np,nrg,ncg,diff,per,perdsp)
-		
-			Description
-			
-			  UNIANAL computes the autocorrelation and partial
-			  autocorrelation functions and the generalized partial
-			  autocorrelation array of the sequence y and
-			  plots the results.
-			
-			  UNIANAL(Y,NA,NP,NRG,NCG,DIFF,PER,PERDSP) takes these inputs,
-			    Y   - Vector containing the sequence.
-			    NA  - The autocorrelation lags will range from -NA to +NA; default = 20.
-			    NP  - Number of partial autocorrelation terms to compute; default = 10.
-			    NRG - Number of rows of the GPAC to compute; default = 5.
-			    NCG - Number of columns of the GPAC to compute; default = 5.
-			    DIFF  = [diff1 diff2...diffNP], default = [0].
-			      diffi - Order of the differencing for period i.
-			    PER   = [per1 per2...perNP], default = [].
-			      peri  - Period i.
-			    PERDSP- Period at which to display acf and pacf data.; default = 1;
-			  and returns,
-			    YACF  - Autocorrelation function for Y.
-			    YPACF - Partial autocorrelation function for Y.
-			    YGPAC - Generalized partial autocorrelation function for Y.
-				
-			Examples
-		
-			  This code generates an autoregressive sequence.
-			
-			    e = randn(1,2000);
-			    y = filter(1,[1 -.8],e);
-		
-			  The following command generates the autocorrelation and
-			  partial autocorrelation functions.  The acf will be
-			  computed from lag -20 to lag 20.  The pacf will be computed
-			  from order 1 to order 10. 
-		
-			    [yacf,ypacf,ygpac] = uniAnal(y,20,10);
-		
+	"""Compute and plot the ACF, PACF, and GPAC for a univariate time series.
 
-		 Yong Hu, Martin Hagan, 9-15-00
-		 $Revision: 1.0 $ $Date: 21-Sep-2000 14:37:36 $
+    Differences the series as requested, computes the autocorrelation (ACF),
+    partial autocorrelation (PACF), and generalized partial autocorrelation
+    (GPAC) functions, and produces stem/GPAC plots for order identification.
 
-	'''
+    Parameters
+    ----------
+    y : array-like
+        1-D time series.
+    na : int, optional
+        Maximum lag for ACF; lags range from ``-na`` to ``+na``. Default 20.
+    nump : int, optional
+        Number of PACF terms to compute (lags 1 .. nump). Default 10.
+    nrg : int, optional
+        Number of GPAC rows (numerator orders). Default 5.
+    ncg : int, optional
+        Number of GPAC columns (denominator orders); 0 sets it equal to
+        ``nrg``. Default 0.
+    diff : list of int, optional
+        Differencing orders ``[d0, d1, ...]``.  ``diff[i]`` is applied at
+        period ``per[i-1]`` (first element uses period 1). Default ``[0]``.
+    per : list of int, optional
+        Seasonal periods ``[p1, p2, ...]``.  Must have one fewer element than
+        ``diff``. Default ``[]``.
+    perdsp : int, optional
+        Display period — ACF and PACF are sampled at every ``perdsp``-th lag.
+        Default 1.
+
+    Returns
+    -------
+    yacf : ndarray, shape (1, 2*na+1)
+        Biased ACF from lag ``-na`` to ``+na``.
+    ypacf : ndarray, shape (1, nump)
+        Partial ACF from lag 1 to ``nump``.
+    ygpac : ndarray, shape (nrg, ncg)
+        GPAC table (row = numerator order, column = denominator order).
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scipy.signal import lfilter
+    >>> from TimeSeriesSRC.basefunctions.uniAnal import func_uniAnal
+    >>> e = np.random.default_rng(0).standard_normal(500)
+    >>> y = lfilter([1], [1, -0.8], e)
+    >>> yacf, ypacf, ygpac = func_uniAnal(y, na=20, nump=10, nrg=5)
+
+    See Also
+    --------
+    multiAnal : Analysis for input-output (transfer function) data.
+    uniChi : Box-Pierce chi-square whiteness test on residuals.
+	"""
 
 
 	y = func_makerow(y)

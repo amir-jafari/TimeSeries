@@ -2,39 +2,33 @@ import numpy as np
 from scipy.special import gamma
 
 def func_chisqrdf (q,n) :
-	'''
-		CHISQRDF Calculate Chi-square cumulative density function. 
-		
-			Syntax
-		
-			  p = chisqrdf(q,n)
-		
-			Description
-			
-			  CHISQRDF(Q,N) computes the chi square cumulative density function
-			  with parameter N at the values in Q. 
-		
-			  CHISQRDF(Q,N) takes these inputs,
-			    Q - Chi-square statistic.
-			    N - Degree of freedom.
-			  and returns,
-			    P - Probability that the observation from the chi-square 
-			        distribution will fall in the interval [0 Q].  
-		
-			Examples
-		
-			  From Chi-square distribution table, we know that if n = 10,
-			  q= 18.3, then pr will be 0.95.  The following code verify 
-			  this observation:
-		
-			    pr = chisqrdf(18.3,10)
-		
-			See also STATS\CHI2CDF
+	"""Compute the chi-square cumulative distribution function (CDF).
 
-		 Yong Hu, Martin Hagan, 9-15-00
-		 $Revision: 1.0 $ $Date: 21-Sep-2000 14:37:36 $
+    Returns the probability that a chi-square random variable with ``n``
+    degrees of freedom falls in the interval ``[0, q]``.
 
-	'''
+    Parameters
+    ----------
+    q : float
+        Chi-square statistic (upper integration limit), must be > 0.
+    n : int
+        Degrees of freedom.
+
+    Returns
+    -------
+    pr : float
+        :math:`P(X \\leq q)` where :math:`X \\sim \\chi^2(n)`.
+
+    Examples
+    --------
+    >>> from TimeSeriesSRC.basefunctions.chisqrdf import func_chisqrdf
+    >>> func_chisqrdf(18.3, 10)   # should be ≈ 0.95
+    0.9499...
+
+    See Also
+    --------
+    uniChi : Uses this function to convert Q statistic to p-value.
+	"""
 
 	t = np.round(np.arange(0, q, q/5000),4)
 	x = gamma(n/2)

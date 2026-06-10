@@ -4,59 +4,68 @@ from .xcorr import func_xcorr as xcorr
 from .chisqrdf import func_chisqrdf as chisqrdf
 
 def func_multiChi(pmod, y, u, k1=20, k2=20, alpha1=0.05, alpha2=0.05):
-	'''
-		MULTICHI Multivariate Chi-Square test.
+	"""Multivariate chi-square tests for transfer function model validation.
 
-			Syntax
+    Performs two hypothesis tests on a fitted transfer function model:
 
-			  [pass,q,s,nq,ns] = multiChi(pmod,y,u,k1,k2,alpha1,alpha2)
+    1. **Residual whiteness** — Box-Pierce Q statistic on the one-step-ahead
+       residuals ``e``.  Tests whether the noise model H(q) is adequate.
+    2. **Residual/input independence** — cross-correlation statistic S between
+       the pre-whitened input ``u`` and the residuals ``e``.  Tests whether
+       the transfer function G(q) is adequate.
 
-			Description
+    Parameters
+    ----------
+    pmod : pmodel
+        Estimated prediction model (ARX, ARMAX, or BJTF).
+    y : array-like
+        1-D desired output sequence.
+    u : array-like
+        1-D or 2-D input sequence, shape ``(N,)`` or ``(1, N)``.
+    k1 : int, optional
+        Residual-ACF lags for the Q statistic. Default 20.
+    k2 : int, optional
+        Cross-correlation lags for the S statistic. Default 20.
+    alpha1 : float, optional
+        Significance level for the residual whiteness test. Default 0.05.
+    alpha2 : float, optional
+        Significance level for the cross-correlation test. Default 0.05.
 
-			  MULTICHI performs multivariate chi-square tests. It calculates
-			  two chi-square statistics. The first statistic tests the
-			  whiteness of the residuals. The second tests cross-correlations
-			  between residuals and model inputs.
+    Returns
+    -------
+    pass_arr : list of int
+        ``[pass_Q, pass_S]`` — 1 if the test passes, 0 otherwise.
+    q : float
+        Box-Pierce Q statistic (residual autocorrelation).
+    pvalq : float
+        p-value for Q.
+    s : float
+        Cross-correlation chi-square statistic.
+    pvals : float
+        p-value for S.
+    nq : int
+        Degrees of freedom for Q.
+    ns : int
+        Degrees of freedom for S.
 
-			  MULTICHI(PMOD,Y,U,K1,K2,ALPHA1,ALPHA2) takes these inputs,
-			    PMOD   - Prediction model.
-			    Y      - Prediction model desired outputs (1-D array).
-			    U      - Prediction model inputs (1-D or 2-D array, shape (1,N)).
-			    K1     - Number of lags of the ACF to use, default = 20.
-			    K2     - Number of lags of the cross correlation to use, default = 20.
-			    ALPHA1 - Probability of type I error for the residuals, default = 0.05.
-			    ALPHA2 - Probability of type I error for the crosscorrelation, default = 0.05.
-			  and returns,
-			    PASS - List of two values.
-			           PASS[0] = 1 if test for residual correlation is passed, 0 otherwise.
-			           PASS[1] = 1 if test for cross correlation is passed, 0 otherwise.
-			    Q    - The chi-square statistic for the residual autocorrelation.
-			    S    - The chi-square statistic for the crosscorrelation.
-			    NQ   - Degrees of freedom for Q.
-			    NS   - Degrees of freedom for S.
+    Examples
+    --------
+    >>> import pathlib, pandas as pd
+    >>> import TimeSeriesSRC as ts
+    >>> data_dir = pathlib.Path(ts.__file__).parent / 'TestData'
+    >>> df  = pd.read_csv(data_dir / 'Series_J_Gas_Furnace.csv')
+    >>> u   = df.iloc[:, 0].values
+    >>> y   = df.iloc[:, 1].values
+    >>> pm  = ts.pmodel('arx', na=[2], nb=[2], delay=[3])
+    >>> pm_est, trec, stat = ts.estimate(pm, y, u=u,
+    ...                                  show_plot=False, show_output=False)
+    >>> pass_arr, q, pvalq, s, pvals, nq, ns = ts.multiChi(pm_est, y, u)
 
-			Examples
-
-			  This code estimates a Box-Jenkins Transfer Function model from the
-			  gas furnace data.
-
-			    import scipy.io
-			    data = scipy.io.loadmat('furnace.mat')
-			    y = data['y'][0] - data['y'].mean()
-			    u = data['u'] - data['u'].mean()
-			    pmod = pmodel('bjtf', nb=[2], nc=[0], nd=[2], nf=[2], delay=[3], diff=[0], per=[])
-			    pmod, trec, stat = estimate(pmod, y, u)
-
-			  The estimated BJTF model then performs chi-square test.
-
-			    pass_arr, q, s, nq, ns = multiChi(pmod, y, u)
-
-			See also UNICHI.
-
-		Yong Hu, Martin Hagan, 9-15-00
-		Python port: 2026
-
-	'''
+    See Also
+    --------
+    uniChi : Univariate chi-square test (ARMA models without input).
+    multiAnal : Impulse response and GPAC analysis for input-output data.
+	"""
 	from ..Model.selpmod import func_selpmod as selpmod
 
 	y_1d = np.asarray(y).ravel()

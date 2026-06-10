@@ -2,45 +2,42 @@ import numpy as np
 from .makerow import func_makerow
 
 def func_parcor (acf,nump) :
-	'''
-		PARCOR Calculate the partial autocorrelation function
-			
-			Syntax
-		
-			  [pacf,phi,sigma]=parcor(acf,np)
-		
-			Description
-			
-			  PARCOR uses the Levinson algorithm to compute the partial
-			  autocorrelation function of the sequence y.
-			
-			  PARCOR(NA,NP) takes these inputs,
-			    ACF - Autocorrelation sequence (zero lag in the center).
-			    NUMP  - Number of partial autocorrelation terms to compute.
-			  and returns,
-			    PACF  - Partial autocorrelation function.
-			    PHI   - Autoregressive parameters.
-			    SIGMA - Residual variance for autoregressive model.
-				
-			Examples
-		
-			  This code generates an autoregressive sequence.
-			
-			    e = randn(1,2000);
-			    y = filter(1,[1 -.8],e);
-		
-			  The following commands generate the partial autocorrelation 
-			  function.  The pacf will be computed from order 1 to order 10.
-		
-			    acf = xcorr(y,y,20,'unbiased');
-			    [pacf,phi,sigma]=parcor(acf,10);
-		
+	"""Compute the partial autocorrelation function via the Levinson-Durbin algorithm.
 
-		 Yong Hu, Martin Hagan, 9-15-00
-		 $Revision: 1.0 $ $Date: 21-Sep-2000 14:37:36 $
+    Parameters
+    ----------
+    acf : array-like
+        Full (two-sided) autocorrelation sequence with the zero-lag value at
+        the center — i.e., the output of :func:`func_xcorr`.
+        Shape ``(1, 2*L+1)`` or ``(2*L+1,)``.
+    nump : int
+        Number of PACF terms to compute (orders 1 through ``nump``).
 
-		 Make sure that acf is a row
-	'''
+    Returns
+    -------
+    pacf : ndarray, shape (1, nump)
+        Partial autocorrelation values at orders 1 through ``nump``.
+    phi : ndarray, shape (nump+1, 1)
+        Final AR parameter vector from the Levinson recursion.
+    sigma : float
+        Residual variance of the AR(nump) model.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scipy.signal import lfilter
+    >>> from TimeSeriesSRC.basefunctions.xcorr import func_xcorr
+    >>> from TimeSeriesSRC.basefunctions.parcor import func_parcor
+    >>> e = np.random.default_rng(0).standard_normal(500)
+    >>> y = lfilter([1], [1, -0.8], e)
+    >>> acf = func_xcorr(y, y, 20, 'biased')
+    >>> pacf, phi, sigma = func_parcor(acf, 10)
+
+    See Also
+    --------
+    xcorr : Compute the autocorrelation sequence.
+    gpac  : Generalized partial autocorrelation table.
+	"""
 
 	acf = func_makerow(acf)
 	xlen = len(acf[0])

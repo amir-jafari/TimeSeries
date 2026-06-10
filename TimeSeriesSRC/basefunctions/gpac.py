@@ -2,43 +2,54 @@ import warnings
 import numpy as np
 
 def func_gpac (acf,nrows,ncols) :
-	'''
-		GPAC Calculate the generalized partial autocorrelation function
-			
-			Syntax
-		
-			  [gpac_array] = gpac(acf,nrows,ncols)
-		
-			Description
-			
-			  GPAC computes the generalized partial
-			  autocorrelation function for the acf.
-			
-			  GPAC(ACF,NROWS,NCOLS) takes these inputs,
-			    ACF   - Autocorrelation sequence (zero lag in the center).
-			    NROWS - Number of rows of the GPAC to compute.
-			    NCOLS - Number of columns of the GPAC to compute.
-			  and returns,
-			    GPAC_ARRAY - Generalized partial autocorrelation function.
-				
-			Examples
-		
-			  This code generates an autoregressive sequence.
-			
-			    e = randn(1,2000);
-			    y = filter(1,[1 -.8],e);
-		
-			  The following commands generate the generalized partial autocorrelation 
-			  function.  The gpac will be computed for 7 rows and 7 columns.
-		
-			    acf = xcorr(y,y,20,'unbiased');
-			    [gpac_array] = gpac(acf,7,7)
-		
+	"""Compute the Generalized Partial Autocorrelation (GPAC) table.
 
-		 Yong Hu, Martin Hagan, 9-15-00
-		 $Revision: 1.0 $ $Date: 21-Sep-2000 14:37:36 $
+    Each cell ``(j, m)`` of the GPAC is the ratio of two determinants built
+    from the ACF, following the Woodward & Gray (1981) construction.  The
+    table simultaneously identifies the MA order (row index + 1) and AR order
+    (column index + 1) of an ARMA process: cells in an MA(q) column pattern
+    or AR(p) row pattern help select model orders.
 
-	'''
+    Parameters
+    ----------
+    acf : array-like, shape (1, 2*L+1) or (2*L+1,) or (2*L,)
+        Autocorrelation sequence.  If two-sided (zero lag at center), the
+        positive-lag half is extracted automatically.  If one-sided
+        (zero lag first), it is used directly.
+    nrows : int
+        Number of GPAC rows (numerator orders 1 .. nrows).
+    ncols : int
+        Number of GPAC columns (denominator orders 1 .. ncols).
+
+    Returns
+    -------
+    gpac_array : ndarray, shape (nrows, ncols)
+        GPAC table.  Row ``j`` corresponds to MA order ``j+1``; column ``m``
+        corresponds to AR order ``m+1``.
+
+    Notes
+    -----
+    If ``nrows + ncols`` exceeds the half-length of the ACF, ``ncols`` is
+    silently truncated and a ``UserWarning`` is issued.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scipy.signal import lfilter
+    >>> from TimeSeriesSRC.basefunctions.xcorr import func_xcorr
+    >>> from TimeSeriesSRC.basefunctions.gpac import func_gpac
+    >>> e = np.random.default_rng(0).standard_normal(500)
+    >>> y = lfilter([1], [1, -0.8], e)
+    >>> acf = func_xcorr(y, y, 25, 'biased')
+    >>> G = func_gpac(acf, nrows=5, ncols=5)
+    >>> G.shape
+    (5, 5)
+
+    See Also
+    --------
+    plotgpac : Visualize the GPAC table.
+    uniAnal  : Computes and plots ACF, PACF, and GPAC together.
+	"""
 
 	if len(acf.shape) == 1:
 		acf = acf.reshape(1,-1)

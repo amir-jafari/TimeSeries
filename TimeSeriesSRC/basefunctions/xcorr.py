@@ -2,41 +2,49 @@ import numpy as np
 from ..basefunctions import makerow
 
 def func_xcorr (a,b,maxlag=20,flag='none') :
-	'''
-		XCORR Calculate autocorrelation function
-		
-			Syntax
-		
-			  C = XCORR(A,B,MAXLAG,'flag')
-		
-			Description
-			
-		    XCORR(A,B,MAXLAG,'flag') 
-		    normalizes the correlation according to 'flag':
-		        biased   - scales the raw cross-correlation by 1/N.
-		        unbiased - scales the raw correlation by 1/(N-abs(k)), where k 
-		                   is the index into the result.
-		        coeff    - normalizes the sequence so that the correlations at 
-		                   zero lag are identically 1.0.
-		        none     - no scaling (this is the default).
-				
-			Examples
-		
-			  This code generates an autoregressive sequence.
-			
-			    e = randn(1,2000);
-			    y = filter(1,[1 -.8],e);
-		
-			  The following command generates the autocorrelation functions.
-			  The acf will be computed from lag -20 to lag 20.   
-		
-			    yacf = xcorr(y,y,20,'unbiased');
-		
+	"""Compute the cross-correlation (or autocorrelation) between two sequences.
 
-		 Yong Hu, Martin Hagan, 10-05-00
-		 $Revision: 1.0 $ $Date: 05-Oct-2000 00:50:00 $
+    Produces a symmetric array of length ``2*maxlag + 1`` covering lags
+    ``-maxlag`` to ``+maxlag``.
 
-	'''
+    Parameters
+    ----------
+    a : array-like
+        First 1-D sequence (length N).
+    b : array-like
+        Second 1-D sequence (same length as ``a``).
+    maxlag : int, optional
+        Maximum lag to compute; must be less than N. Default 20.
+    flag : {'biased', 'unbiased', 'coeff', 'none'}, optional
+        Normalization method:
+
+        - ``'biased'``   — divide by N (biased estimate).
+        - ``'unbiased'`` — divide by N - |k| (unbiased estimate).
+        - ``'coeff'``    — normalize so that the zero-lag value is 1.0.
+        - ``'none'``     — no scaling (raw inner product). Default.
+
+    Returns
+    -------
+    c : ndarray, shape (1, 2*maxlag+1)
+        Cross-correlation values at lags ``-maxlag, ..., 0, ..., +maxlag``.
+        The zero-lag value is at index ``maxlag``.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scipy.signal import lfilter
+    >>> from TimeSeriesSRC.basefunctions.xcorr import func_xcorr
+    >>> e = np.random.default_rng(0).standard_normal(500)
+    >>> y = lfilter([1], [1, -0.8], e)
+    >>> acf = func_xcorr(y, y, maxlag=20, flag='biased')
+    >>> acf.shape
+    (1, 41)
+
+    See Also
+    --------
+    parcor : Partial autocorrelation via Levinson-Durbin.
+    gpac   : Generalized partial autocorrelation table.
+	"""
 
 
 	error = ''

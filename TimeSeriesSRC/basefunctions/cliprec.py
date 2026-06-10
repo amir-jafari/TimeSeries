@@ -1,16 +1,24 @@
 def func_cliprec (tr,epochs) :
-	'''
-		CLIPTR Clip training record to the final number of epochs.
-		
-			Syntax
-		
-			  tr = cliptr(tr,epochs)
-		
+	"""Trim a training record to the last completed epoch.
 
-		 Yong Hu, Martin Hagan, 9-15-00
-		 $Revision: 1.0 $ $Date: 21-Sep-2000 14:37:36 $
+    Parameters
+    ----------
+    tr : dict
+        Training record as returned by :func:`func_newrec`.  Each value is
+        a list of length ``max_epochs``.
+    epochs : int
+        Index of the final completed epoch (0-based).
 
-	'''
+    Returns
+    -------
+    tr : dict
+        Same dict with each list sliced to ``epochs`` entries.
+
+    See Also
+    --------
+    func_newrec  : Allocates a training record.
+    func_estimlm : Calls this at the end of optimisation.
+	"""
 
 	indexes = list(range(epochs + 1))
 	for name in tr:

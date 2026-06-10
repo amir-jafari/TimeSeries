@@ -8,98 +8,62 @@ from .pmodbic import func_pmodbic as pmodbic
 from .pmodaic import func_pmodaic as pmodaic
 from .estimate import estimate as estimate
 def func_selpmod (filename,y,u=[]):
-	'''
-		SELPMOD Select the best prediction model based on AIC and BIC criteria.
-		
-			Syntax
-		
-			  [estpmod] = selpmod(filename,y,u)
-			  [estpmod] = selpmod(string,y,u)
-			  [estpmod] = selpmod(cellarray,y,u)
-		
-			Description
-		
-			  SELPMOD select the best prediction model (model parameters defined
-			  in 'filename') from data y, u based on aic and bic criteria.  
-		
-			  SELPMOD(FILENAME,Y,U) takes,
-			    FILENAME - File name, cell array or string which specifies the estimation parameters.
-			    Y        - Prediction model desired outputs.
-			    U        - Prediction model inputs, default = [] (only for arma model).
-			  and returns,
-			    ESTPMOD  - Estimated prediction model, which has the following structure:
-			      ESTPMOD.'TYPE'.AIC     - AIC array, along with the corresponding
-			                              order parameters, such as na,nb,nc,nd.
-			      ESTPMOD.'TYPE'.BIC     - BIC array, along with the corresponding
-			                              order parameters, such as na,nb,nc,nd.
-			      ESTPMOD.'TYPE'.AICSTAT.SIGMA - AIC model sum squared error.
-			      ESTPMOD.'TYPE'.AICSTAT.STDX  - AIC model parameter standard deviation.
-			      ESTPMOD.'TYPE'.BICSTAT.SIGMA - BIC model sum squared error.
-			      ESTPMOD.'TYPE'.BICSTAT.STDX  - BIC model parameter standard deviation.
-			      ESTPMOD.'TYPE'.AICMOD - The best prediction model selected from AIC criteria.
-			      ESTPMOD.'TYPE'.BICMOD - The best prediction model selected from BIC criteria.
-			      'TYPE' can be 'bjtf','arx','arma','armax','regr'.	      
-		
-			  FILENAME is the file that specify parameter ranges (orders of na,nb,nc,nd,nf,
-			  ranges of delay,diff,per, etc.).  It should meet the following specifications:
-			    (1) each line can only specify the order parameters for one model type.
-			    (2) each line begins with model type, quoted with single quotation.
-			    (3) each line ends with a full stop '.'.
-			    (4) parameters can be specified as follows:
-			          na=1-4   -> na = [1 2 3 4]
-			          na=1~4   -> na = [1 2 3 4]
-			          na=1,2   -> na = [1 2]
-			          na=1-3,5 -> na = [1 2 3 5]
-			    (4) delimiter can be '\t', ' ' , ',' , ';'.
-			    (5) delimiters which are ajacent to each other are treated as one delimiter.
-			    (6) lines after '%' are treated as comments.
-			    (7) case is ignored.
-			  
-			  SELPMOD(STRING,...) takes string as the first arguement.  The string has the 
-			  same specification as filename does.
-		
-			  SELPMOD(CELLARRAY,...) takes cell array as the first argument.  Each element of 
-			  the cell is a string, which meets the same specification as filename does.
-		
-		
-			Examples
-		
-			  Here is the real model parameters and y,u data generated from
-			  the real model.
-		
-			    nb = 1; 
-			    na = 2;
-			    delay = 1;
-			    b = {[2 3]};
-			    a = {[-1 0.25]};
-			    u=randn(1,2000);
-			    e=randn(1,2000)*.5;
-			    pmodr = newarx(na,nb,delay);
-			    pmodr.a = a;
-			    pmodr.b = b;
-			    y = pmodsim(pmodr,e,u);
-		
-			  The models to be estimated can be specified as follows,
+	"""Select the best prediction model by grid-searching AIC and BIC.
 
-				SPEC{1} = arx ,na=1-3, nb=1~2, delay=0,1,2, diff=1-2,3
-			   SPEC{2} = armax,na=1,2,nb=1,nc=0-1,nd=1,delay=0-1.
+    Exhaustively searches the order combinations defined in a JSON spec file (or
+    dict), fits each candidate model with :func:`estimate`, and returns the
+    best models according to both Akaike (AIC) and Bayesian (BIC) criteria.
 
-			   	Here the best prediction models are estimated based on AIC
-			  	and BIC,
+    Parameters
+    ----------
+    filename : str or dict
+        Path to a JSON specification file **or** a dict with the same structure.
+        The JSON must have a ``"models"`` list; each entry is a dict with a
+        ``"type"`` key (``'arma'``, ``'arx'``, ``'armax'``, ``'bjtf'``,
+        ``'regr'``) and order keys such as ``na``, ``nb``, ``nc``, ``nd``,
+        ``nf``, ``diff``, ``delay``, ``per`` — each holding a list of candidate
+        integer values to try.
+    y : array-like
+        Observed output time series.
+    u : array-like, optional
+        Input time series (required for ARX, ARMAX, BJTF, regr models).
+        Default ``[]``.
 
-			    estpmod = selpmod(SPEC,y,u);
-			    Mreal = getmX(pmodr)
-			    Marxaic = getmX(estpmod.arx.aicmod)
-			    Marxbic = getmX(estpmod.arx.bicmod)
-			    Marmaxaic = getmX(estpmod.armax.aicmod)
-			    Marmaxbic = getmX(estpmod.armax.bicmod)
-		
-			See also PREDICT, PMODSIM, ESTIMATE.
+    Returns
+    -------
+    result : dict
+        Keyed by model type (e.g. ``'arma'``, ``'arx'``).  Each value is a
+        dict with:
 
-		 Yong Hu, Martin Hagan, 9-15-00
-		 $Revision: 1.0 $ $Date: 21-Sep-2000 14:37:36 $
+        - ``'model'``   — model type string.
+        - ``'aic'``     — list of AIC values for every combination tried.
+        - ``'bic'``     — list of BIC values for every combination tried.
+        - ``'aicstat'`` — ``stat`` dict from :func:`estimate` for the AIC winner.
+        - ``'bicstat'`` — ``stat`` dict from :func:`estimate` for the BIC winner.
+        - ``'aicmod'``  — best :class:`pmodel` selected by AIC.
+        - ``'bicmod'``  — best :class:`pmodel` selected by BIC.
 
-	'''
+    Examples
+    --------
+    >>> import pathlib, json
+    >>> import TimeSeriesSRC as ts
+    >>> spec = {
+    ...     "models": [
+    ...         {"type": "arma", "nc": [1, 2], "nd": [1], "diff": [0], "per": []}
+    ...     ]
+    ... }
+    >>> data_dir = pathlib.Path(ts.__file__).parent / 'TestData'
+    >>> import pandas as pd
+    >>> y = pd.read_csv(data_dir / 'Series_A_Chemical_Concentration.csv').values.flatten()
+    >>> result = ts.selpmod(spec, y)
+    >>> best = result['arma']['aicmod']
+
+    See Also
+    --------
+    estimate : Fit a single model.
+    pmodaic  : Akaike Information Criterion.
+    pmodbic  : Bayesian Information Criterion.
+	"""
 
 
 	if type(filename) is dict:

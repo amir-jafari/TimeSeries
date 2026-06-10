@@ -1,19 +1,33 @@
 import numpy as np
 
 def func_newrec (epochs, *argv) :
-	'''
-		NEWTR New training record with any number of optional fields.
-		
-			Syntax
-		
-			  tr = newtr(epochs,'fieldname1','fieldname2',...)
-			  tr = newtr([firstEpoch epochs],'fieldname1','fieldname2',...)
-		
+	"""Allocate a training record with pre-zeroed fields.
 
-		 Yong Hu, Martin Hagan, 9-15-00
-		 $Revision: 1.0 $ $Date: 21-Sep-2000 14:37:36 $
+    Parameters
+    ----------
+    epochs : int
+        Number of epochs to pre-allocate.
+    *argv : str
+        Field names for the record (e.g. ``'index'``, ``'mu'``).
 
-	'''
+    Returns
+    -------
+    tr : dict
+        Dict mapping each field name to a list of ``epochs`` zeros.
+
+    Examples
+    --------
+    >>> from TimeSeriesSRC.basefunctions.newrec import func_newrec
+    >>> tr = func_newrec(5, 'index', 'mu')
+    >>> list(tr.keys())
+    ['index', 'mu']
+    >>> len(tr['index'])
+    5
+
+    See Also
+    --------
+    func_cliprec : Trims the record to the actual number of epochs used.
+	"""
 
 	names = argv
 

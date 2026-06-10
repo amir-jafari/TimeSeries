@@ -5,52 +5,44 @@ import numpy as np
 import math
 
 def func_plotgpac (gpac,gtitle="Gpac Array",  ax=None) :
-	'''
-		PLOTGPAC Plot the gpac array.
-		
-			Syntax
-		
-			  PLOTGPAC(GPAC,GTITLE)
-		
-			Description
-			
-			  PLOTGPAC(GPAC,GTITLE) takes these inputs,
-			    GPAC   - GPAC array.
-			    GTITLE - Title for the plot.
-			  and displays the GPAC array represented as a grid of squares.
-			
-			  Each square's AREA represents the magnitude of an element.
-			  Each square's COLOR represents the element's sign.
-			  RED for negative values, GREEN for positive.
-		
-			Examples
-		
-			  This code generates an autoregressive sequence.
-			
-			    e = randn(1,2000);
-			    y = filter(1,[1 -.8],e);
-		
-			  The following command generates the autocorrelation and
-			  partial autocorrelation functions.  The acf will be
-			  computed from lag -20 to lag 20.  The pacf will be computed
-			  from order 1 to order 10. 
-		
-			    acf = xcorr(y,y,20,'unbiased');
-		 	    [gpac_array] = gpac(acf,7,7);
-			    plotgpac(gpac_array);
-			    
-		
+	"""Visualize a GPAC table as a grid of colored squares.
 
-		 Mark Beale, 1-31-92
-		 Revised 12-15-93, MB
-		 Revised 11-31-97, MB
-		 Revised from network weights to GPAC display 7-1-00
-		 Martin Hagan, 9-15-00
-		 $Revision: 1.0 $ $Date: 21-Sep-2000 14:37:36 $
-		 $Revision: 1.1 $ $Date: 12-Dec-2006 16:44:39 $ use ind instead of [i,j]
-		 to find min and max
+    Each cell's **area** encodes the magnitude of the GPAC value and its
+    **color** encodes the sign: green for positive, red for negative.
 
-	'''
+    Parameters
+    ----------
+    gpac : ndarray, shape (nrows, ncols)
+        GPAC table as returned by :func:`func_gpac`.
+    gtitle : str, optional
+        Plot title. Default ``'Gpac Array'``.
+    ax : matplotlib.axes.Axes or None, optional
+        Axes on which to draw.  If ``None`` a new figure is created and
+        displayed. Default ``None``.
+
+    Returns
+    -------
+    ax : matplotlib.axes.Axes
+        The axes containing the plot.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scipy.signal import lfilter
+    >>> from TimeSeriesSRC.basefunctions.xcorr import func_xcorr
+    >>> from TimeSeriesSRC.basefunctions.gpac import func_gpac
+    >>> from TimeSeriesSRC.basefunctions.plotgpac import func_plotgpac
+    >>> e = np.random.default_rng(0).standard_normal(500)
+    >>> y = lfilter([1], [1, -0.8], e)
+    >>> acf = func_xcorr(y, y, 25, 'biased')
+    >>> G = func_gpac(acf, 5, 5)
+    >>> ax = func_plotgpac(G, 'My GPAC')
+
+    See Also
+    --------
+    gpac    : Compute the GPAC table.
+    uniAnal : Calls this function automatically.
+	"""
 
 	limit = 5
 	ind = np.where(gpac > limit)

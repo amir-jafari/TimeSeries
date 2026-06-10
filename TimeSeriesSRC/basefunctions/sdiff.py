@@ -2,46 +2,49 @@ from . import makerow
 import numpy as np
 
 def func_sdiff (y,d,p=1) :
-	'''
-		SDIFF Seasonal differencing
-			
-			Syntax
-		
-			  [yd] = sdiff(y,d,p)
-		
-			Description
-			
-			  SDIFF differences the data a specified number of 
-			  times.  Each difference involves subtracting each 
-			  original time point from the point one period away.
-		     
-			
-			  SDIFF(Y,D,P) takes these inputs,
-			    Y - 1xN vector containing the input sequence.
-			    D - Number of differences to take.
-			    P - Period of the difference; default = 1.
-			  and returns,
-			    YD  - RxQ vector containing the differenced series
-				
-			Examples
-		
-			  Here is how to difference a sequence twice
-			  at a period of 4.
-			
-			    y=[1:20].^2;
-			    yd=sdiff(y,2,4);
-		
-			Algorithm
-		
-			    yd = yd(1+i*p:num_pts) - yd(1:num_pts-i*p);
-		
-			See also DIFF.
+	"""Apply seasonal (or regular) differencing to a time series.
 
-		 Yong Hu, Martin Hagan, 9-15-00
-		 $Revision: 1.0 $ $Date: 21-Sep-2000 14:37:36 $
+    Computes the ``d``-th order difference at period ``p``:
 
+    .. math::
 
-	'''
+        \\nabla_p^d\\, y(t) = \\nabla_p^{d-1}\\, y(t) - \\nabla_p^{d-1}\\, y(t-p)
+
+    For ``p = 1`` this reduces to ordinary differencing (``numpy.diff``).
+
+    Parameters
+    ----------
+    y : array-like
+        1-D or row-vector input series.
+    d : int
+        Number of differences to apply. ``d = 0`` returns ``y`` unchanged.
+    p : int, optional
+        Seasonal period. Default 1 (ordinary differencing).
+
+    Returns
+    -------
+    yd : ndarray, shape (1, N - d*p)
+        Differenced series.  Each application of the operator reduces the
+        length by ``p``.
+
+    Raises
+    ------
+    Exception
+        If ``d * p`` is larger than or equal to the length of ``y``.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from TimeSeriesSRC.basefunctions.sdiff import func_sdiff
+    >>> y = np.arange(1.0, 21.0)
+    >>> yd = func_sdiff(y, d=1, p=4)   # seasonal difference at lag 4
+    >>> yd.shape
+    (1, 16)
+
+    See Also
+    --------
+    uniAnal : Passes ``diff`` / ``per`` arguments directly to this function.
+	"""
 
 
 	# Make y into row format

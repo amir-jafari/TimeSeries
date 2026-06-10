@@ -1,0 +1,79 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "timeseries-toolbox"
+version = "0.1.0"
+description = "A Python toolbox for time series analysis and prediction modeling based on the Box-Jenkins framework"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "Amir Jafari",          email = "ajafari@gwu.edu"           },
+    { name = "Martin Hagan"                                               },
+    { name = "Lilian S. De Rivera"                                        },
+]
+maintainers = [
+    { name = "Amir Jafari", email = "ajafari@gwu.edu" },
+]
+keywords = [
+    "time series", "ARMA", "ARIMA", "ARMAX", "ARX", "BJTF",
+    "Box-Jenkins", "system identification", "forecasting",
+    "Levenberg-Marquardt", "model selection", "AIC", "BIC",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Operating System :: OS Independent",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "numpy>=1.19",
+    "scipy>=1.5",
+    "matplotlib>=3.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+]
+docs = [
+    "sphinx>=7.0",
+    "furo>=2023.1.1",
+    "sphinx-copybutton>=0.5",
+    "myst-parser>=2.0",
+    "sphinx-autodoc-typehints>=1.23",
+    "nbsphinx>=0.9",
+    "ipykernel>=6.0",
+]
+
+[project.urls]
+Homepage      = "https://github.com/amir-jafari/TimeSeries"
+Documentation = "https://amir-jafari.github.io/TimeSeries"
+Repository    = "https://github.com/amir-jafari/TimeSeries"
+"Bug Tracker" = "https://github.com/amir-jafari/TimeSeries/issues"
+Changelog     = "https://github.com/amir-jafari/TimeSeries/releases"
+
+[tool.setuptools.packages.find]
+where   = ["."]
+include = ["TimeSeriesSRC", "TimeSeriesSRC.*"]
+
+[tool.setuptools.package-data]
+"TimeSeriesSRC" = ["TestData/*.csv"]
+
+[tool.pytest.ini_options]
+testpaths    = ["tests"]
+python_files = ["test_*.py"]
+addopts      = "-v"

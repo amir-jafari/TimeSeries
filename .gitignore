@@ -116,3 +116,13 @@ cython_debug/
 # JetBrains IDEs
 .idea/
 
+# Sphinx build output
+docs/_build/
+docs/api/generated/
+docs/_notebooks/
+
+# PyPI recovery codes (never commit secrets)
+PyPI-Recovery-Codes.txt
+
+# Personal instruction files (not for the repo)
+PUBLISHING_INSTRUCTIONS.md

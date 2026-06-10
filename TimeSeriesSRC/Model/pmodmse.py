@@ -4,57 +4,40 @@ from ..basefunctions.makerow import  func_makerow as makerow
 from ..basefunctions.sepym import func_sepym as sepym
 
 def func_pmodmse (pmod,y,u=[]):
-	'''
-		PMODMSE Find the error and the mean square error for a prediction model.
-		
-			Synopsis
-		
-			  [mse,e]=pmodmse(pmod,y,u)
-		
-			Description
-		
-			  This function calculates the performance index of the
-			  prediction model for a given set of inputs and
-			  desired outputs.
-		
-			  [MSE,E]=pmodmse(PMOD,Y,U) takes,
-			    PMOD - Prediction model.
-			    Y    - Desired outputs of the prediction model. Y may or may
-			           not be a structure.  If Y is a structure, then Y.Y  
-			           is the prediction model desired outputs, and Y.M is
-			           the vector containing the weighting factors
-			           for each error.  
-			    U    - Inputs to the prediction model.
-			  and returns,
-			    MSE   - Prediction model mean square error.
-			    E     - Prediction errors.
-		
-			Examples
-		
-			  Here we create a Box and Jenkins Transfer Function
-			  prediction model with each polynomial first order.
-		
-			    pmod = newbjtf(1,1,1,1);
-		
-			  Here is a single input sequence u with 5 timesteps.
-		
-			    u = [0 0.1 0.3 0.6 0.4];
-		
-			  Here we define the desired predictions for 
-			  each of the five time steps.
-			  
-			    y = [0.1 0.3 0.5 0.8 0.5];
-		
-			  Here we calculate the prediction model's mean square error
-			  and prediction errors..
-		
-			    [mse,e] = pmodmse(pmod,y,u)
-		
+	"""Compute the mean squared prediction error (MSE) for a fitted model.
 
-		 Yong Hu, Martin Hagan, 9-15-00
-		 $Revision: 1.0 $ $Date: 21-Sep-2000 14:37:36 $
+    Parameters
+    ----------
+    pmod : pmodel
+        Fitted prediction model.
+    y : array-like
+        Desired output sequence.
+    u : array-like, optional
+        Input sequence (required for ARX, ARMAX, BJTF models).
+        Default ``[]`` (univariate models).
 
-	'''
+    Returns
+    -------
+    mse : float
+        Mean squared one-step-ahead prediction error.
+    e : ndarray
+        Prediction error sequence ``y - yhat``.
+
+    Examples
+    --------
+    >>> import pathlib, pandas as pd
+    >>> import TimeSeriesSRC as ts
+    >>> data_dir = pathlib.Path(ts.__file__).parent / 'TestData'
+    >>> y = pd.read_csv(data_dir / 'Series_A_Chemical_Concentration.csv').values.flatten()
+    >>> pm = ts.pmodel('arma', nc=[2], nd=[1], diff=[0], per=[])
+    >>> pm_est, trec, stat = ts.estimate(pm, y, show_plot=False, show_output=False)
+    >>> mse, e = ts.pmodmse(pm_est, y)
+
+    See Also
+    --------
+    pmodaic : Akaike Information Criterion.
+    pmodbic : Bayesian Information Criterion.
+	"""
 
 	uflag = len(u) > 0
 

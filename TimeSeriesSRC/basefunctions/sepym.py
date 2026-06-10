@@ -1,39 +1,36 @@
 import numpy as np
 
 def func_sepym (y):
-	'''
-		SEPYM Seperate y and m from y if y is a structure.
-		
-			Syntax
-		
-			  [ystru,y,m]=sepym(y);
-		
-			Description
-		
-			  This function extracts y and m from structured y if input y is a 
-			  structure, and retains y as ystru.  If input y is not a structure,
-			  m is returned as a row vector, which has the same order as y.
-			  Constructs a structure ystru, which has field ystru.y = y and
-			  ystru.m = m.
-		
-			  [ystru,y,m]=sepym(y) takes,
-			    y     - Desired prediction model output.  If y is a structure, 
-			            y contains y.y, and y.m.
-			  and returns,
-			    YSTRU - Structured y with field ystru.y and ystru.m.
-			    y     - Desired prediction model output, not a structure.  
-			    M     - Row vector containing the weighting factors for
-			            each error.  If input y is not a structure, m is an 
-			            ONE row vector which has the same order as y.
-		
+	"""Unpack a (possibly weighted) output argument into its components.
 
-		 Yong Hu, Martin Hagan, 9-15-00
-		 $Revision: 1.0 $ $Date: 21-Sep-2000 14:37:36 $
+    Accepts either a plain array or a dict with keys ``'y'`` and ``'m'``.
+    Always returns the array, the weight vector, and a canonical structured
+    form so downstream code can use a uniform interface.
 
+    Parameters
+    ----------
+    y : array-like or dict
+        Output data.  If a dict, must have:
 
+        - ``y['y']`` — output array.
+        - ``y['m']`` — sample-weight vector (same length as ``y['y']``).
 
+        If a plain array, all weights default to 1.
 
-	'''
+    Returns
+    -------
+    ystru : dict
+        Dict with keys ``'y'`` (array) and ``'m'`` (weights).
+    y : ndarray
+        Output array (extracted from ``ystru`` if input was a dict).
+    m : ndarray, shape (1, N)
+        Row vector of sample weights.
+
+    See Also
+    --------
+    func_estimlm  : Passes ``y`` through this before optimisation.
+    func_jacobian : Also unpacks ``y`` via this function.
+	"""
 
 
 	if type(y) is dict:

@@ -3,46 +3,53 @@ from scipy.signal import lfilter
 
 
 def func_partoacf(phi, theta, lagmax, var_a):
-	'''
-		PARTOACF  Theoretical autocovariance function of an ARMA process.
+	"""Compute the theoretical autocovariance function of an ARMA process.
 
-			Syntax
+    Uses the Yule-Walker method: solves a linear system for the first ``p``
+    lags, then extends the autocovariance sequence by the AR recursion.
 
-			  [acf, imp] = partoacf(phi, theta, lagmax, var_a)
+    The ARMA convention is:
 
-			Description
+    .. math::
 
-			  Computes the theoretical autocovariance function of a stationary
-			  ARMA process:
+        y(t) + \\phi_1 y(t-1) + \\cdots + \\phi_p y(t-p) =
+        a(t) + \\theta_1 a(t-1) + \\cdots + \\theta_q a(t-q)
 
-			    y(t) + phi1*y(t-1) + ... + phip*y(t-p) =
-			        a(t) + theta1*a(t-1) + ... + thetaq*a(t-q)
+    Parameters
+    ----------
+    phi : array-like
+        AR polynomial **including** the leading 1:
+        ``[1, phi1, phi2, ...]``.
+    theta : array-like
+        MA polynomial **including** the leading 1:
+        ``[1, theta1, theta2, ...]``.
+    lagmax : int
+        Number of lags to compute; output covers lags 0 through
+        ``lagmax - 1``.
+    var_a : float
+        Variance :math:`\\sigma_a^2` of the white-noise input ``a(t)``.
 
-			  where a(t) is white noise with variance var_a.
+    Returns
+    -------
+    acf : ndarray, shape (lagmax,)
+        Theoretical autocovariance function.  ``acf[0]`` is the variance
+        of ``y``.
+    imp : ndarray, shape (p,)
+        First ``p`` coefficients of the impulse response of
+        :math:`C(B) / D(B)`.
 
-			  PARTOACF(PHI, THETA, LAGMAX, VAR_A) takes,
-			    PHI    - AR polynomial including leading 1: [1, phi1, phi2, ...]
-			    THETA  - MA polynomial including leading 1: [1, theta1, theta2, ...]
-			    LAGMAX - Number of lags to compute (output covers lags 0..lagmax-1).
-			    VAR_A  - Variance of the white noise input.
-			  and returns,
-			    ACF    - Autocovariance function, shape (lagmax,).
-			    IMP    - First p elements of the impulse response of C(B)/D(B).
+    Examples
+    --------
+    >>> from TimeSeriesSRC.basefunctions.partoacf import func_partoacf
+    >>> acf, imp = func_partoacf([1, 0.8], [1], 10, 1.0)
+    >>> round(acf[0], 3)   # variance = 1 / (1 - 0.64) ≈ 2.778
+    2.778
 
-			  The Yule-Walker method is used: the first p lags are solved via a
-			  linear system, then lags p..lagmax-1 are extended by the AR recursion.
-
-			Examples
-
-			  AR(1) with phi1 = 0.8 and var_a = 1:
-			    acf, imp = partoacf([1, 0.8], [1], 10, 1.0)
-			    # acf[0] = 1/(1-0.64) = 2.778, acf[1] = -0.8*acf[0], ...
-
-			See also PARTOACF_PMOD, UNIANAL.
-
-		Based on partoacf.m by Yong Hu, Martin Hagan, 9-15-00
-		Python port: 2026
-	'''
+    See Also
+    --------
+    func_partoacf_pmod : Wrapper that reads polynomials from a ``pmodel``.
+    uniAnal : Computes the sample ACF from data.
+	"""
 
 	phi   = np.asarray(phi,   dtype=float).ravel()
 	theta = np.asarray(theta, dtype=float).ravel()
@@ -95,46 +102,45 @@ def func_partoacf(phi, theta, lagmax, var_a):
 
 
 def func_partoacf_pmod(pmod, var_a, lagmax):
-	'''
-		PARTOACF_PMOD  Theoretical autocovariance function from a pmodel.
+	"""Compute the theoretical autocovariance from a fitted ``pmodel``.
 
-			Syntax
+    Extracts the AR (D) and MA (C) polynomials from ``pmod``, composes
+    seasonal factors when present, and calls :func:`func_partoacf`.
 
-			  [acf, imp] = partoacf_pmod(pmod, var_a, lagmax)
+    Parameters
+    ----------
+    pmod : pmodel
+        Fitted ARMA prediction model.  Seasonal components are handled
+        automatically using ``pmod.period``.
+    var_a : float
+        Variance :math:`\\sigma_a^2` of the white-noise driving process.
+    lagmax : int
+        Number of autocovariance lags to compute (lags 0 .. lagmax-1).
 
-			Description
+    Returns
+    -------
+    acf : ndarray, shape (lagmax,)
+        Theoretical autocovariance function. ``acf[0]`` is the variance of
+        ``y``.
+    imp : ndarray, shape (p,)
+        First ``p`` impulse-response coefficients of :math:`C(B)/D(B)`.
+    g_ir : ndarray
+        Impulse response of the G transfer function (empty for ARMA models).
 
-			  Extracts the AR (D) and MA (C) polynomials from an ARMA prediction
-			  model and computes the theoretical autocovariance function using
-			  the Yule-Walker method.  Handles seasonal ARMA structure by using
-			  the composite polynomials returned by pmod.getGH().
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from TimeSeriesSRC.Model.model import pmodel
+    >>> from TimeSeriesSRC.basefunctions.partoacf import func_partoacf_pmod
+    >>> pm = pmodel('arma', nc=[1], nd=[1], diff=[0], per=[])
+    >>> pm.c[0] = np.array([-0.5])
+    >>> pm.d[0] = np.array([-0.8])
+    >>> acf, imp, g_ir = func_partoacf_pmod(pm, 1.0, 10)
 
-			  PARTOACF_PMOD(PMOD, VAR_A, LAGMAX) takes,
-			    PMOD   - ARMA prediction model (pmodel with type 'arma').
-			    VAR_A  - Variance of the white noise input a(t).
-			    LAGMAX - Number of lags to compute (output covers lags 0..lagmax-1).
-			  and returns,
-			    ACF    - Autocovariance function, shape (lagmax,).
-			             ACF[0] = variance of y.
-			    IMP    - First p elements of the impulse response of C(B)/D(B).
-
-			  The ARMA model convention is D(B)*y(t) = C(B)*a(t), where:
-			    D polynomial (AR) = pmod.d  →  phi   = [1, d1, d2, ...]
-			    C polynomial (MA) = pmod.c  →  theta = [1, c1, c2, ...]
-
-			Examples
-
-			  ARMA(2,1) model:
-			    pmod = pmodel('arma', nc=[1], nd=[2], diff=[0], per=[])
-			    pmod.c[0] = np.array([-0.8])
-			    pmod.d[0] = np.array([-1.2, 0.35])
-			    acf, imp = partoacf_pmod(pmod, 1.0, 15)
-
-			See also PARTOACF, UNIANAL.
-
-		Yong Hu, Martin Hagan, 9-15-00
-		Python port: 2026
-	'''
+    See Also
+    --------
+    func_partoacf : Lower-level function that takes explicit polynomials.
+	"""
 
 	# Read the stationary ARMA polynomials directly from the model coefficients.
 	# getGH() now includes differencing operators (for ARIMA), which would

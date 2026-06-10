@@ -3,39 +3,43 @@ from matplotlib import style
 import numpy as np
 
 def func_plotacf(acf, maxlag=None, gtitle="Autocorrelation Function", ax=None):
-	'''
-		PLOTACF Plot the autocorrelation function using a stem plot.
+	"""Plot the autocorrelation function as a stem plot.
 
-			Syntax
+    Parameters
+    ----------
+    acf : array-like
+        Autocorrelation sequence as returned by :func:`func_xcorr`, shape
+        ``(1, 2*maxlag+1)`` or ``(2*maxlag+1,)``.
+    maxlag : int or None, optional
+        Maximum lag displayed.  If ``None``, inferred from the length of
+        ``acf`` as ``(len(acf) - 1) // 2``. Default ``None``.
+    gtitle : str, optional
+        Plot title. Default ``'Autocorrelation Function'``.
+    ax : matplotlib.axes.Axes or None, optional
+        Axes on which to draw.  A new figure is created when ``None``.
+        Default ``None``.
 
-			  PLOTACF(ACF,MAXLAG,GTITLE)
+    Returns
+    -------
+    ax : matplotlib.axes.Axes
+        The axes containing the stem plot.
 
-			Description
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scipy.signal import lfilter
+    >>> from TimeSeriesSRC.basefunctions.xcorr import func_xcorr
+    >>> from TimeSeriesSRC.basefunctions.plotacf import func_plotacf
+    >>> e = np.random.default_rng(0).standard_normal(500)
+    >>> y = lfilter([1], [1, -0.8], e)
+    >>> acf = func_xcorr(y, y, 20, 'biased')
+    >>> ax = func_plotacf(acf, maxlag=20)
 
-			  PLOTACF(ACF,MAXLAG,GTITLE) takes these inputs,
-			    ACF    - Autocorrelation array from xcorr function.
-			    MAXLAG - Maximum lag value (optional, inferred from ACF length).
-			    GTITLE - Title for the plot.
-			  and displays the autocorrelation function as a stem plot.
-
-			Examples
-
-			  This code generates an autoregressive sequence.
-
-			    e = randn(1,2000);
-			    y = filter(1,[1 -.8],e);
-
-			  The following command generates the autocorrelation function.
-			  The acf will be computed from lag -20 to lag 20.
-
-			    acf = xcorr(y,y,20,'unbiased');
-			    plotacf(acf,20);
-
-
-		 Martin Hagan, 2-4-26
-		 $Revision: 1.0 $ $Date: 04-Feb-2026 $
-
-	'''
+    See Also
+    --------
+    xcorr   : Compute the autocorrelation sequence.
+    uniAnal : Higher-level function that plots ACF, PACF, and GPAC together.
+	"""
 
 	# Handle input shape - xcorr returns [1, 2*maxlag+1] array
 	acf = np.array(acf).flatten()

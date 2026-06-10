@@ -1,34 +1,41 @@
 import numpy as np
 
 def func_gcombvec (a1, *argv) :
-	'''
-		GCOMBVEC Generalized vector combinations.
-		
-			Syntax
-		
-			  gcombvec(a1,a2)
-		
-			Description
-		
-			  GCOMBVEC(A1,A2) takes two inputs,
-			    A1 - Matrix of N1 (column) vectors.
-			    A2 - Matrix of N2 (column) vectors.
-			  and returns a matrix of N1*N2 column vectors, where the columns
-			  consist of all possibilities of A2 vectors, appended to
-			  A1 vectors. It can handle the case in which rows of A1 is 
-			  greater than columns of A1.
-		
-			Example
-			
-			  a1 = [7; 9];
-			  a2 = [1 2 3; 4 5 6];
-			  a3 = gcombvec(a1,a2)
+	"""Return all column-vector combinations of two or more input matrices.
 
-		 Revised from \toolbox\nnet\combvec.m
-		 Yong Hu, Martin Hagan, 9-15-00
-		 $Revision: 1.0 $ $Date: 21-Sep-2000 14:37:36 $
+    Given matrices ``a1`` (shape ``r1 × c1``) and ``a2`` (shape ``r2 × c2``),
+    returns a matrix of shape ``(r1+r2) × (c1*c2)`` whose columns are every
+    possible concatenation of a column from ``a1`` with a column from ``a2``.
+    Additional positional arguments are combined recursively.
 
-	'''
+    Parameters
+    ----------
+    a1 : ndarray, shape (r1, c1)
+        First matrix of column vectors.
+    *argv : ndarray
+        One or more additional matrices to combine with ``a1``.
+
+    Returns
+    -------
+    y : ndarray
+        Matrix of all column combinations.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from TimeSeriesSRC.basefunctions.gcombvec import func_gcombvec
+    >>> a1 = np.array([[7], [9]])
+    >>> a2 = np.array([[1, 2, 3], [4, 5, 6]])
+    >>> func_gcombvec(a1, a2)
+    array([[7, 7, 7, 9, 9, 9],
+           [9, 9, 9, 7, 7, 7],
+           [1, 2, 3, 1, 2, 3],
+           [4, 5, 6, 4, 5, 6]])
+
+    See Also
+    --------
+    func_selpmod : Uses this to enumerate model-order grids.
+	"""
 
    #=============================================================
 	def nncpy(m,n):

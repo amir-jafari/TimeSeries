@@ -6,58 +6,47 @@ from ..basefunctions.makerow import func_makerow as makerow
 
 
 def func_pmodsim (pmod,e,u=[]):
-	'''
-		PMODSIM Simulate a prediction model.
-		
-			Syntax
-		
-			  [Y] = PMODSIM(PMOD,E,U)
-		
-			Description
-		
-			  PMODSIM simulates the prediction model PMOD.
-		
-			  PMODSIM(PMOD,E,U) takes,
-			    PMOD - Prediction model.
-			    E    - White noise.
-			    U    - Prediction model inputs.
-			  and returns,
-			    Y    - Prediction model output.
-		
-		
-			Examples
-		
-			  Here are a few points from sample e and u sequences:
-		
-			    e = [ 0.9501    0.2311    0.6068    0.4860    0.8913    0.7621];
-			    u = [-0.4326   -1.6656    0.1253    0.2877   -1.1465    1.1909];
-		
-			  Here NEWBJTF is used to create a Box and Jenkins Transfer Function
-			  model with first order polynomials.
-		
-			    pmod = newbjtf(1,1,1,1);
-		
-			  The parameters of the model are all set to random values by default. 
-			  Now we can simulate this random prediction model: 
-		
-			    y = pmodsim(pmod,e,u);
-			    ind = 1:length(y);
-			    plot(ind,u,'o',ind,y,'x')
-			    
-			Algorithm
-		
-			  PMODSIM simulates the following system model.
-		
-		     y(t) = sumi{Gi ui(t)} + H e(t)
-		
-			See also PREDICT, ESTIMATE
+	"""Simulate the output of a prediction model driven by white noise.
 
-		 Yong Hu, Martin Hagan, 9-15-00
-		 $Revision: 1.0 $ $Date: 21-Sep-2000 14:37:36 $
+    Implements the system:
 
+    .. math::
 
-		preprocessing
-	'''
+        y(t) = G(q)\\,u(t) + H(q)\\,e(t)
+
+    where :math:`G(q)` and :math:`H(q)` are the transfer functions of the
+    fitted model, and :math:`e(t)` is a user-supplied white noise sequence.
+
+    Parameters
+    ----------
+    pmod : pmodel
+        Fitted or manually constructed prediction model.
+    e : array-like
+        White noise input sequence with the same length as ``u``.
+    u : array-like, optional
+        External input sequence.  Required for ARX, ARMAX, BJTF, and
+        regression models.  Default ``[]``.
+
+    Returns
+    -------
+    y : ndarray
+        Simulated output sequence.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import TimeSeriesSRC as ts
+    >>> pm = ts.pmodel('arma', nc=[1], nd=[1], diff=[0], per=[])
+    >>> pm.c[0] = np.array([-0.5])
+    >>> pm.d[0] = np.array([-0.8])
+    >>> e = np.random.default_rng(0).standard_normal(200)
+    >>> y = ts.pmodsim(pm, e)
+
+    See Also
+    --------
+    estimate : Fit model parameters from data.
+    pmodel   : Define model structure.
+	"""
 
 	math_functions = dir(math)
 	# preprocessing

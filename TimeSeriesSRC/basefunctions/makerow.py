@@ -1,38 +1,27 @@
 def func_makerow (y):
-	'''
-		MAKEROW Convert vector into row vector
+	"""Ensure a numpy array has shape ``(1, N)`` (row vector).
 
-		   Parameters:
-		   	 y = numpy array
-		
-		   Syntax
-		
-		     yr = makerow(y)
-		
-		   Description
-		
-		     MAKEROW converts any vector into a row vector.
-		
-		     MAKEROW(Y) takes this input
-		       Y - Row or column vector
-		     and returns,
-		       YR - Row vector.
-		
-		   Examples
-		
-		     This code creates a column vector y and converts it to a row.
-		
-		       y = [1;2;3;4];
-		       yr = makerow(y);
-		
+    If the array is 1-D it is reshaped to ``(1, N)``.  If it is already
+    2-D with more rows than columns it is transposed.  Otherwise it is
+    returned unchanged.
 
-		 Yong Hu, Martin Hagan, 9-15-00
-		 $Revision: 1.0 $ $Date: 21-Sep-2000 14:37:36 $
+    Parameters
+    ----------
+    y : ndarray
+        Input array of shape ``(N,)``, ``(N, 1)``, or ``(1, N)``.
 
-		------------------------------------------------
-		Lilian SDR, 06,06.2020
+    Returns
+    -------
+    yr : ndarray, shape (1, N)
+        Row-vector form of ``y``.
 
-	'''
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from TimeSeriesSRC.basefunctions.makerow import func_makerow
+    >>> func_makerow(np.array([1, 2, 3, 4])).shape
+    (1, 4)
+	"""
 
 	## what happens if the array size == 0 or grearter than 2
 

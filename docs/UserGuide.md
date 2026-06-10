@@ -40,7 +40,6 @@ This guide describes every public function in the toolbox: its purpose, calling 
 
 ## 1. Model Building
 
----
 
 ### `pmodel`
 
@@ -238,7 +237,6 @@ y = pmodsim(pmod, e, u=[])
 
 ## 2. Model Assessment
 
----
 
 ### `pmodmse`
 
@@ -408,7 +406,6 @@ pmodpzplot(pmod)
 
 ## 3. Time Series Analysis
 
----
 
 ### `uniAnal`
 
@@ -491,7 +488,6 @@ g, rv, g_gpac, h_gpac = multiAnal(u, y, nng=5, ndg=5, nnh=5, ndh=5,
 
 ## 4. Diagnostic Tests
 
----
 
 ### `uniChi`
 
@@ -569,7 +565,6 @@ passed, q, pvalq, s, pvals, nq, ns = multiChi(pmod, y, u,
 
 ## 5. Theoretical Tools
 
----
 
 ### `partoacf`
 
