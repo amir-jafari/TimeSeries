@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "timeseries-toolbox"
-version = "0.1.3"
+version = "0.1.4"
 description = "A Python toolbox for time series analysis and prediction modeling based on the Box-Jenkins framework"
 readme = "README.md"
 license = { text = "MIT" }
