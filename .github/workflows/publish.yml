@@ -25,6 +25,12 @@ jobs:
       - name: Build wheel and sdist
         run: python -m build
 
+      - name: Rename sdist to use underscores (PyPI requirement)
+        run: |
+          for f in dist/timeseries-toolbox-*.tar.gz; do
+            mv "$f" "${f/timeseries-toolbox-/timeseries_toolbox-}"
+          done
+
       - name: Store distribution packages
         uses: actions/upload-artifact@v4
         with:
