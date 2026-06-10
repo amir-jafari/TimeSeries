@@ -4,14 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "timeseries-toolbox"
-version = "0.1.0"
+version = "0.1.2"
 description = "A Python toolbox for time series analysis and prediction modeling based on the Box-Jenkins framework"
 readme = "README.md"
 license = { text = "MIT" }
 authors = [
-    { name = "Amir Jafari",          email = "ajafari@gwu.edu"           },
-    { name = "Martin Hagan"                                               },
-    { name = "Lilian S. De Rivera"                                        },
+    { name = "Amir Jafari"         },
+    { name = "Martin Hagan"        },
+    { name = "Lilian S. De Rivera" },
 ]
 maintainers = [
     { name = "Amir Jafari", email = "ajafari@gwu.edu" },
