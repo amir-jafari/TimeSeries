@@ -41,9 +41,6 @@ jobs:
       name: testpypi
       url: https://test.pypi.org/p/timeseries-toolbox
 
-    permissions:
-      id-token: write
-
     steps:
       - name: Download distributions
         uses: actions/download-artifact@v4
@@ -51,30 +48,24 @@ jobs:
           name: python-package-distributions
           path: dist/
 
-      - name: Fix Docker DNS (Ubuntu runner workaround)
+      - name: Upload to TestPyPI
         run: |
-          echo '{"dns": ["8.8.8.8", "8.8.4.4"]}' | sudo tee /etc/docker/daemon.json
-          sudo systemctl restart docker
-
-      - name: Publish to TestPyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://upload.test.pypi.org/legacy/
+          pip install twine
+          python -m twine upload --repository-url https://upload.test.pypi.org/legacy/ dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
 
   # ── Step 3: publish to PyPI only for real (non-pre-release) releases ───────
   publish-to-pypi:
     name: Publish to PyPI
     needs: build
     runs-on: ubuntu-latest
-    # Skip this job if the release is marked as a pre-release
     if: github.event.release.prerelease == false
 
     environment:
       name: pypi
       url: https://pypi.org/p/timeseries-toolbox
-
-    permissions:
-      id-token: write   # required for OIDC trusted-publisher auth
 
     steps:
       - name: Download distributions
@@ -83,10 +74,10 @@ jobs:
           name: python-package-distributions
           path: dist/
 
-      - name: Fix Docker DNS (Ubuntu runner workaround)
+      - name: Upload to PyPI
         run: |
-          echo '{"dns": ["8.8.8.8", "8.8.4.4"]}' | sudo tee /etc/docker/daemon.json
-          sudo systemctl restart docker
-
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+          pip install twine
+          python -m twine upload dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
