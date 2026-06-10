@@ -2,6 +2,8 @@
 import pathlib
 import numpy as np
 import pytest
+import matplotlib
+matplotlib.use("Agg")
 
 DATA_DIR = pathlib.Path(__file__).parent.parent / "TimeSeriesSRC" / "TestData"
 
@@ -56,8 +58,6 @@ def test_pmodel_bjtf_creates():
 # ── estimate — ARMA ──────────────────────────────────────────────────────────
 
 def test_estimate_arma_runs():
-    import matplotlib
-    matplotlib.use("Agg")
     from TimeSeriesSRC.Model.model    import pmodel
     from TimeSeriesSRC.Model.estimate import estimate
     y  = load_series_a()
@@ -69,8 +69,6 @@ def test_estimate_arma_runs():
 
 
 def test_estimate_arma_returns_finite_params():
-    import matplotlib
-    matplotlib.use("Agg")
     from TimeSeriesSRC.Model.model    import pmodel
     from TimeSeriesSRC.Model.estimate import estimate
     y  = load_series_a()
@@ -84,8 +82,6 @@ def test_estimate_arma_returns_finite_params():
 # ── estimate — ARX ───────────────────────────────────────────────────────────
 
 def test_estimate_arx_runs():
-    import matplotlib
-    matplotlib.use("Agg")
     from TimeSeriesSRC.Model.model    import pmodel
     from TimeSeriesSRC.Model.estimate import estimate
     y, u = load_series_j()
@@ -99,8 +95,6 @@ def test_estimate_arx_runs():
 # ── criteria ─────────────────────────────────────────────────────────────────
 
 def test_pmodmse_is_positive():
-    import matplotlib
-    matplotlib.use("Agg")
     from TimeSeriesSRC.Model.model    import pmodel
     from TimeSeriesSRC.Model.estimate import estimate
     from TimeSeriesSRC.Model.pmodmse  import func_pmodmse
@@ -108,13 +102,12 @@ def test_pmodmse_is_positive():
     pm = pmodel("arma", nc=[1], nd=[1], diff=[0], per=[])
     pm.estimParams.epochs = 5
     pm_est, trec, stat = estimate(pm, y, show_plot=False, show_output=False)
-    mse = func_pmodmse(pm_est, y)
+    # func_pmodmse returns (mse, e) — must unpack
+    mse, e = func_pmodmse(pm_est, y)
     assert mse > 0
 
 
 def test_pmodaic_and_pmodbic_run():
-    import matplotlib
-    matplotlib.use("Agg")
     from TimeSeriesSRC.Model.model    import pmodel
     from TimeSeriesSRC.Model.estimate import estimate
     from TimeSeriesSRC.Model.pmodaic  import func_pmodaic
@@ -127,3 +120,19 @@ def test_pmodaic_and_pmodbic_run():
     bic = func_pmodbic(pm_est, y)
     assert np.isfinite(aic)
     assert np.isfinite(bic)
+
+
+def test_pmodbic_less_than_aic_for_small_n():
+    """BIC penalises more than AIC when N is small relative to k."""
+    from TimeSeriesSRC.Model.model    import pmodel
+    from TimeSeriesSRC.Model.estimate import estimate
+    from TimeSeriesSRC.Model.pmodaic  import func_pmodaic
+    from TimeSeriesSRC.Model.pmodbic  import func_pmodbic
+    y  = load_series_a()
+    pm = pmodel("arma", nc=[2], nd=[2], diff=[0], per=[])
+    pm.estimParams.epochs = 5
+    pm_est, _, _ = estimate(pm, y, show_plot=False, show_output=False)
+    aic = func_pmodaic(pm_est, y)
+    bic = func_pmodbic(pm_est, y)
+    # For N=197, k=4: BIC penalty = k*ln(N)/N ≈ 0.107 > AIC penalty = 2k/N ≈ 0.041
+    assert bic > aic
