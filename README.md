@@ -26,7 +26,7 @@ Building a prediction model is an iterative four-step process.
 
 All models in this toolbox share a common structure: a linear filter driven by a white noise input $e(t)$ and, optionally, an observed external input $u(t)$.  Every model can be written
 
-$$y(t) = G(q)\,u(t) + H(q)\,e(t)$$
+$$y(t) = G(q)u(t) + H(q)e(t)$$
 
 where $G(q)$ is the transfer function from input to output and $H(q)$ is the noise model.  The models differ in how $G$ and $H$ are parameterized.
 
@@ -34,13 +34,13 @@ where $G(q)$ is the transfer function from input to output and $H(q)$ is the noi
 
 All models are expressed using the **backward shift operator** $q^{-1}$, defined by
 
-$$q^{-k}\,y(t) = y(t-k)$$
+$$q^{-k}y(t) = y(t-k)$$
 
 A polynomial in $q^{-1}$ of order $n_p$ is written
 
 $$P(q) = 1 + p_1 q^{-1} + p_2 q^{-2} + \cdots + p_{n_p} q^{-n_p}$$
 
-so that $P(q)\,y(t) = y(t) + p_1 y(t-1) + \cdots + p_n y(t-n_p)$.
+so that $P(q)y(t) = y(t) + p_1 y(t-1) + \cdots + p_n y(t-n_p)$.
 
 Throughout this document $e(t)$ denotes a **white noise** sequence with zero mean and variance $\sigma^2$.
 
@@ -50,7 +50,7 @@ Throughout this document $e(t)$ denotes a **white noise** sequence with zero mea
 
 The simplest model expresses the current value of $y(t)$ as a weighted sum of its own past values plus white noise:
 
-$$D(q)\,y(t) = e(t)$$
+$$D(q)y(t) = e(t)$$
 
 where the **autoregressive polynomial** is
 
@@ -68,7 +68,7 @@ pmodel('arma', nc=[0], nd=[nd], diff=[0], per=[])
 
 A moving average model expresses $y(t)$ as a weighted sum of current and past noise values:
 
-$$y(t) = C(q)\,e(t)$$
+$$y(t) = C(q)e(t)$$
 
 where the **moving average polynomial** is
 
@@ -86,7 +86,7 @@ pmodel('arma', nc=[nc], nd=[0], diff=[0], per=[])
 
 Combining both components gives the ARMA($n_d$, $n_c$) model:
 
-$$D(q)\,y(t) = C(q)\,e(t)$$
+$$D(q)y(t) = C(q)e(t)$$
 
 The noise is modeled by the transfer function $H(q) = C(q)/D(q)$.  An ARMA model is typically more parsimonious than a pure AR or MA model of equivalent fit quality: a low-order ARMA can often replace a high-order AR.
 
@@ -100,11 +100,11 @@ pmodel('arma', nc=[nc], nd=[nd], diff=[0], per=[])
 
 Many real-world series are **non-stationary** — their mean or variance drifts over time.  The ARIMA($n_d$, $d$, $n_c$) model handles this by differencing the series $d$ times before fitting an ARMA model.  The difference operator is
 
-$$\nabla = 1 - q^{-1}, \qquad \nabla^d y(t) = (1 - q^{-1})^d\,y(t)$$
+$$\nabla = 1 - q^{-1}, \qquad \nabla^d y(t) = (1 - q^{-1})^dy(t)$$
 
 so that $\nabla y(t) = y(t) - y(t-1)$ and $\nabla^2 y(t) = y(t) - 2y(t-1) + y(t-2)$.  The model equation is
 
-$$D(q)\,\nabla^d y(t) = C(q)\,e(t)$$
+$$D(q)\nabla^d y(t) = C(q)e(t)$$
 
 ```python
 pmodel('arma', nc=[nc], nd=[nd], diff=[d], per=[])
@@ -124,7 +124,7 @@ $$C_s(q^{-s}) = 1 + c_{s,1}q^{-s} + \cdots + c_{s,n_{c,s}}q^{-n_{c,s} s}$$
 
 The seasonal ARIMA model with non-seasonal differencing order $d$ and seasonal differencing order $d_s$ is
 
-$$D(q)\,D_s(q^{-s})\,\nabla^d\,\nabla_s^{d_s}\,y(t) = C(q)\,C_s(q^{-s})\,e(t)$$
+$$D(q)D_s(q^{-s})\nabla^d\nabla_s^{d_s}y(t) = C(q)C_s(q^{-s})e(t)$$
 
 ```python
 pmodel('arma', nc=[nc, nc_s], nd=[nd, nd_s], diff=[d, d_s], per=[s])
@@ -136,7 +136,7 @@ pmodel('arma', nc=[nc, nc_s], nd=[nd, nd_s], diff=[d, d_s], per=[s])
 
 When an observed external input $u(t)$ is available, the simplest extension adds an input term and an autoregressive filter:
 
-$$A(q)\,y(t) = B(q)\,q^{-k}\,u(t) + e(t)$$
+$$A(q)y(t) = B(q)q^{-k}u(t) + e(t)$$
 
 where $k$ is the pure input delay and
 
@@ -146,7 +146,7 @@ $$B(q) = b_0 + b_1 q^{-1} + \cdots + b_{n_b} q^{-n_b}$$
 
 The transfer functions are
 
-$$G(q) = \frac{B(q)}{A(q)}\,q^{-k}, \qquad H(q) = \frac{1}{A(q)}$$
+$$G(q) = \frac{B(q)}{A(q)}q^{-k}, \qquad H(q) = \frac{1}{A(q)}$$
 
 Note that the **same polynomial** $A(q)$ governs both the input dynamics and the noise model.  Because the noise $e(t)$ appears as an additive "equation error," the parameters can be estimated by linear least squares — a significant computational advantage.  The trade-off is that the noise poles are constrained to equal the input poles.
 
@@ -160,11 +160,11 @@ pmodel('arx', na=na, nb=[nb], delay=[k])
 
 Adding a moving average term to the noise model relaxes the noise-pole constraint:
 
-$$A(q)\,y(t) = B(q)\,q^{-k}\,u(t) + C(q)\,e(t)$$
+$$A(q)y(t) = B(q)q^{-k}u(t) + C(q)e(t)$$
 
 The transfer functions are
 
-$$G(q) = \frac{B(q)}{A(q)}\,q^{-k}, \qquad H(q) = \frac{C(q)}{A(q)}$$
+$$G(q) = \frac{B(q)}{A(q)}q^{-k}, \qquad H(q) = \frac{C(q)}{A(q)}$$
 
 The polynomial $A(q)$ still appears in both $G$ and $H$, so the noise poles remain tied to the input poles.  The extra $C(q)$ numerator provides more flexibility in shaping the noise spectrum without adding new poles.  Parameter estimation requires non-linear optimization; the toolbox uses the Levenberg–Marquardt algorithm.
 
@@ -178,7 +178,7 @@ pmodel('armax', na=na, nb=[nb], nc=nc, delay=[k])
 
 The most general model in the toolbox gives the input dynamics and the noise model **completely independent** parameterizations:
 
-$$y(t) = \frac{B(q)}{F(q)}\,q^{-k}\,u(t) + \frac{C(q)}{D(q)}\,e(t)$$
+$$y(t) = \frac{B(q)}{F(q)}q^{-k}u(t) + \frac{C(q)}{D(q)}e(t)$$
 
 where
 
@@ -198,11 +198,11 @@ pmodel('bjtf', nb=[nb], nc=[nc], nd=[nd], nf=[nf], delay=[k])
 
 All models share a common predictor structure.  Given the noise transfer function $H(q) = C(q)/D(q)$, the optimal one-step-ahead predictor is
 
-$$\hat{y}(t \mid t-1) = \left[1 - H^{-1}(q)\right]y(t) + H^{-1}(q)\,G(q)\,u(t)$$
+$$\hat{y}(t \mid t-1) = \left[1 - H^{-1}(q)\right]y(t) + H^{-1}(q)G(q)u(t)$$
 
 For the BJTF model this expands to
 
-$$\hat{y}(t) = \frac{C(q) - D(q)}{C(q)}\,y(t) + \frac{D(q)\,B(q)\,q^{-k}}{C(q)\,F(q)}\,u(t)$$
+$$\hat{y}(t) = \frac{C(q) - D(q)}{C(q)}y(t) + \frac{D(q)B(q)q^{-k}}{C(q)F(q)}u(t)$$
 
 The toolbox minimizes the sum of squared one-step prediction errors $\sum_t [y(t) - \hat{y}(t)]^2$ using the **Levenberg–Marquardt** algorithm.
 
